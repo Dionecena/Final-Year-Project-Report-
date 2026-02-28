@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, Legend,
+  PieChart, Pie, Cell, LineChart, Line,
 } from 'recharts';
 import api from '../../services/api';
 import { DashboardStats } from '../../types';
@@ -110,7 +110,7 @@ const AdminDashboardPage: React.FC = () => {
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={false}
                   labelLine={false}
                 >
                   {stats.appointments_by_specialty.map((_, index) => (

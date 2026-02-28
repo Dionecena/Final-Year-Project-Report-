@@ -24,22 +24,11 @@ return new class extends Migration
             $table->index('role');
             $table->index('is_active');
         });
-
-        Schema::create('personal_access_tokens', function (Blueprint $table) {
-            $table->id();
-            $table->morphs('tokenable');
-            $table->string('name');
-            $table->string('token', 64)->unique();
-            $table->text('abilities')->nullable();
-            $table->timestamp('last_used_at')->nullable();
-            $table->timestamp('expires_at')->nullable();
-            $table->timestamps();
-        });
+        // Note: personal_access_tokens est créée par Laravel Sanctum automatiquement
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('personal_access_tokens');
         Schema::dropIfExists('users');
     }
 };

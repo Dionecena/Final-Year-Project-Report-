@@ -11,9 +11,7 @@ const registerSchema = z.object({
   phone: z.string().optional(),
   password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
   password_confirmation: z.string(),
-  role: z.enum(['patient', 'doctor']).refine((val) => val !== undefined, {
-    message: 'Veuillez sélectionner un rôle',
-  }),
+  role: z.enum(['patient', 'doctor']),
 }).refine((data) => data.password === data.password_confirmation, {
   message: 'Les mots de passe ne correspondent pas',
   path: ['password_confirmation'],

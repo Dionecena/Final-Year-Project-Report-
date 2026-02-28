@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\PreConsultationController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\SpecialtyController;
 use App\Http\Controllers\Api\SymptomController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -90,9 +93,21 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ============================================
-    // Phase 3 — Dashboard & Audit (à décommenter)
+    // Phase 3 — Dashboard & Statistiques
     // ============================================
-    // Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
-    // Route::get('/admin/audit-logs', [AuditLogController::class, 'index']);
-    // Route::get('/admin/users', [UserController::class, 'index']);
+    Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
+    Route::get('/doctor/dashboard', [DashboardController::class, 'doctorStats']);
+
+    // ============================================
+    // Phase 3 — Audit & Sécurité (admin)
+    // ============================================
+    Route::get('/admin/audit-logs', [AuditLogController::class, 'index']);
+    Route::get('/admin/security-stats', [AuditLogController::class, 'securityStats']);
+
+    // ============================================
+    // Phase 3 — Gestion des utilisateurs (admin)
+    // ============================================
+    Route::get('/admin/users', [UserController::class, 'index']);
+    Route::put('/admin/users/{user}/toggle-status', [UserController::class, 'toggleStatus']);
+    Route::put('/admin/users/{user}/role', [UserController::class, 'updateRole']);
 });

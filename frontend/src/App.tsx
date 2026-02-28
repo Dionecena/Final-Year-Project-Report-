@@ -4,13 +4,28 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
+
+// Auth
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+
+// Dashboard
 import DashboardPage from './pages/DashboardPage';
+
+// Phase 2 — Core Business
 import PreConsultationPage from './pages/PreConsultationPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import NewAppointmentPage from './pages/NewAppointmentPage';
 import DoctorsPage from './pages/DoctorsPage';
+
+// Phase 3 — Admin
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AuditLogsPage from './pages/admin/AuditLogsPage';
+import UsersPage from './pages/admin/UsersPage';
+import SpecialtiesPage from './pages/admin/SpecialtiesPage';
+
+// Phase 3 — Médecin
+import SchedulePage from './pages/doctor/SchedulePage';
 
 // Créer le client React Query
 const queryClient = new QueryClient({
@@ -65,11 +80,49 @@ const App: React.FC = () => {
               />
               <Route path="doctors" element={<DoctorsPage />} />
 
-              {/* Phase 3 — Dashboards avancés (à implémenter) */}
-              {/* <Route path="schedule" element={<SchedulePage />} /> */}
-              {/* <Route path="specialties" element={<SpecialtiesPage />} /> */}
-              {/* <Route path="users" element={<UsersPage />} /> */}
-              {/* <Route path="audit-logs" element={<AuditLogsPage />} /> */}
+              {/* Phase 3 — Médecin */}
+              <Route
+                path="schedule"
+                element={
+                  <ProtectedRoute allowedRoles={['doctor', 'secretary', 'admin']}>
+                    <SchedulePage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Phase 3 — Admin */}
+              <Route
+                path="admin/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'secretary']}>
+                    <AdminDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="specialties"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <SpecialtiesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="users"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <UsersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="audit-logs"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AuditLogsPage />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
 
             {/* Redirection par défaut */}

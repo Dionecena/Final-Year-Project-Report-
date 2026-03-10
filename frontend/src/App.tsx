@@ -5,6 +5,9 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 
+// Public
+import LandingPage from './pages/LandingPage';
+
 // Auth
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -12,22 +15,22 @@ import RegisterPage from './pages/auth/RegisterPage';
 // Dashboard
 import DashboardPage from './pages/DashboardPage';
 
-// Phase 2 — Core Business
+// Phase 2 -- Core Business
 import PreConsultationPage from './pages/PreConsultationPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import NewAppointmentPage from './pages/NewAppointmentPage';
 import DoctorsPage from './pages/DoctorsPage';
 
-// Phase 3 — Admin
+// Phase 3 -- Admin
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AuditLogsPage from './pages/admin/AuditLogsPage';
 import UsersPage from './pages/admin/UsersPage';
 import SpecialtiesPage from './pages/admin/SpecialtiesPage';
 
-// Phase 3 — Médecin
+// Phase 3 -- Medecin
 import SchedulePage from './pages/doctor/SchedulePage';
 
-// Créer le client React Query
+// React Query client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -44,23 +47,24 @@ const App: React.FC = () => {
       <AuthProvider>
         <Router>
           <Routes>
-            {/* Routes publiques */}
+            {/* ====== ROUTES PUBLIQUES ====== */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
-            {/* Routes protégées avec layout Dashboard */}
+            {/* ====== ROUTES PROTEGEES avec layout Dashboard ====== */}
             <Route
-              path="/"
+              path="/app"
               element={
                 <ProtectedRoute>
                   <DashboardLayout />
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
 
-              {/* Phase 2 — Core Business */}
+              {/* Phase 2 -- Core Business */}
               <Route
                 path="preconsultation"
                 element={
@@ -80,22 +84,38 @@ const App: React.FC = () => {
               />
               <Route path="doctors" element={<DoctorsPage />} />
 
-              {/* Phase 3 — Médecin */}
+              {/* Phase 3 -- Medecin */}
               <Route
                 path="schedule"
                 element={
-                  <ProtectedRoute allowedRoles={['doctor', 'secretary', 'admin']}>
+                  <ProtectedRoute allowedRoles={['doctor']}>
                     <SchedulePage />
                   </ProtectedRoute>
                 }
               />
 
-              {/* Phase 3 — Admin */}
+              {/* Phase 3 -- Admin */}
               <Route
-                path="admin/dashboard"
+                path="admin"
                 element={
-                  <ProtectedRoute allowedRoles={['admin', 'secretary']}>
+                  <ProtectedRoute allowedRoles={['admin']}>
                     <AdminDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/users"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <UsersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="admin/audit-logs"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AuditLogsPage />
                   </ProtectedRoute>
                 }
               />
@@ -107,26 +127,22 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="users"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <UsersPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="audit-logs"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <AuditLogsPage />
-                  </ProtectedRoute>
-                }
-              />
             </Route>
 
-            {/* Redirection par défaut */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* ====== RETROCOMPATIBILITE : anciennes URLs /dashboard, /preconsultation, etc. ====== */}
+            <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="/preconsultation" element={<Navigate to="/app/preconsultation" replace />} />
+            <Route path="/appointments" element={<Navigate to="/app/appointments" replace />} />
+            <Route path="/appointments/new" element={<Navigate to="/app/appointments/new" replace />} />
+            <Route path="/doctors" element={<Navigate to="/app/doctors" replace />} />
+            <Route path="/schedule" element={<Navigate to="/app/schedule" replace />} />
+            <Route path="/admin" element={<Navigate to="/app/admin" replace />} />
+            <Route path="/admin/users" element={<Navigate to="/app/admin/users" replace />} />
+            <Route path="/admin/audit-logs" element={<Navigate to="/app/admin/audit-logs" replace />} />
+            <Route path="/specialties" element={<Navigate to="/app/specialties" replace />} />
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
       </AuthProvider>

@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+// Cles localStorage centralisees (doivent correspondre a authService.ts)
+const TOKEN_KEY = 'mediconsult_token';
+const USER_KEY = 'mediconsult_user';
+
 // Configuration de base de l'API
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
@@ -15,7 +19,7 @@ const api = axios.create({
 // Intercepteur pour ajouter le token d'authentification
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -26,24 +30,25 @@ api.interceptors.request.use(
   }
 );
 
-// Intercepteur pour gérer les erreurs de réponse
+// Intercepteur pour gerer les erreurs de reponse
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Token expiré ou non autorisé
+      // Token expire ou non autorise
       if (error.response.status === 401) {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+        delete api.defaults.headers.common['Authorization'];
         window.location.href = '/login';
       }
-      // Accès interdit
+      // Acces interdit
       if (error.response.status === 403) {
-        console.error('Accès interdit');
+        console.error('Acces interdit');
       }
-      // Trop de requêtes (rate limiting)
+      // Trop de requetes (rate limiting)
       if (error.response.status === 429) {
-        console.error('Trop de requêtes. Veuillez réessayer plus tard.');
+        console.error('Trop de requetes. Veuillez reessayer plus tard.');
       }
     }
     return Promise.reject(error);

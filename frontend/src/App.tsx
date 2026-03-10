@@ -11,6 +11,8 @@ import LandingPage from './pages/LandingPage';
 // Auth
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 
 // Dashboard
 import DashboardPage from './pages/DashboardPage';
@@ -40,7 +42,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     },
   },
 });
@@ -55,6 +57,8 @@ const App: React.FC = () => {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* ====== ROUTES PROTEGEES avec layout Dashboard ====== */}
             <Route
@@ -151,7 +155,7 @@ const App: React.FC = () => {
               />
             </Route>
 
-            {/* ====== RETROCOMPATIBILITE : anciennes URLs /dashboard, /preconsultation, etc. ====== */}
+            {/* ====== RETROCOMPATIBILITE ====== */}
             <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
             <Route path="/preconsultation" element={<Navigate to="/app/preconsultation" replace />} />
             <Route path="/appointments" element={<Navigate to="/app/appointments" replace />} />

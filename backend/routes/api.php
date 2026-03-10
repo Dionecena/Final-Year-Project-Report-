@@ -5,13 +5,13 @@ use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DoctorController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PreConsultationController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\SecretaryController;
 use App\Http\Controllers\Api\SpecialtyController;
 use App\Http\Controllers\Api\SymptomController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -117,14 +117,30 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/admin/users/{user}/role', [UserController::class, 'updateRole']);
 
     // ============================================
-    // Notifications
+    // Phase 5 -- Secretaire
+    // ============================================
+    Route::prefix('secretary')->group(function () {
+        Route::get('/appointments', [SecretaryController::class, 'pendingAppointments']);
+        Route::put('/appointments/{appointment}/validate', [SecretaryController::class, 'validateAppointment']);
+        Route::put('/appointments/{appointment}/reject', [SecretaryController::class, 'rejectAppointment']);
+        Route::get('/stats', [SecretaryController::class, 'stats']);
+        Route::get('/online-booking-status', [SecretaryController::class, 'onlineBookingStatus']);
+        Route::put('/online-booking-status', [SecretaryController::class, 'toggleOnlineBooking']);
+    });
+
+    // ============================================
+    // Phase 6 -- Fiches pre-consultation medecin
+    // ============================================
+    Route::get('/doctor/pre-consultations', [DoctorController::class, 'preConsultations']);
+
+    // ============================================
+    // Phase 7 -- Notifications
     // ============================================
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index']);
         Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
-        Route::patch('/{notification}/read', [NotificationController::class, 'markAsRead']);
-        Route::patch('/read-all', [NotificationController::class, 'markAllAsRead']);
-        Route::delete('/read', [NotificationController::class, 'destroyRead']);
+        Route::put('/{notification}/read', [NotificationController::class, 'markAsRead']);
+        Route::put('/read-all', [NotificationController::class, 'markAllAsRead']);
         Route::delete('/{notification}', [NotificationController::class, 'destroy']);
     });
 });

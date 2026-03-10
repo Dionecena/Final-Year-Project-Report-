@@ -4,15 +4,16 @@ import api from '../../services/api';
 interface PreConsultation {
   id: number;
   patient_id: number;
-  specialty_id: number;
-  symptoms: string[];
-  severity: string;
-  duration: string;
-  notes: string;
-  ai_suggestion: string | null;
+  suggested_specialty_id: number | null;
+  symptoms_selected: number[];
+  confidence_score: number | null;
+  additional_notes: string | null;
+  ai_recommendation: string | null;
   created_at: string;
+  updated_at: string;
   patient?: { id: number; name: string; email: string; phone?: string };
-  specialty?: { id: number; name: string };
+  suggested_specialty?: { id: number; name: string };
+  symptoms?: { id: number; name: string; category: string }[];
 }
 
 interface PaginationMeta {
@@ -57,26 +58,18 @@ const PatientFilesPage: React.FC = () => {
     fetchFiles(page);
   }, [page]);
 
-  const getSeverityBadge = (severity: string) => {
-    const colors: Record<string, string> = {
-      low: 'bg-green-100 text-green-800',
-      mild: 'bg-green-100 text-green-800',
-      moderate: 'bg-yellow-100 text-yellow-800',
-      high: 'bg-orange-100 text-orange-800',
-      severe: 'bg-red-100 text-red-800',
-      critical: 'bg-red-100 text-red-800',
-    };
-    const labels: Record<string, string> = {
-      low: 'Faible',
-      mild: 'Leger',
-      moderate: 'Modere',
-      high: 'Eleve',
-      severe: 'Severe',
-      critical: 'Critique',
-    };
+  const getConfidenceBadge = (score: number | null) => {
+    if (score === null) return <span className="text-xs text-gray-400">N/A</span>;
+    const pct = Math.round(score * 100);
+    let color = 'bg-gray-100 text-gray-800';
+    if (pct >= 80) color = 'bg-green-100 text-green-800';
+    else if (pct >= 60) color = 'bg-yellow-100 text-yellow-800';
+    else if (pct >= 40) color = 'bg-orange-100 text-orange-800';
+    else color = 'bg-red-100 text-red-800';
+
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[severity] || 'bg-gray-100 text-gray-800'}`}>
-        {labels[severity] || severity}
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
+        {pct}%
       </span>
     );
   };
@@ -132,9 +125,9 @@ const PatientFilesPage: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Specialite</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Specialite suggeree</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symptomes</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Severite</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Confiance IA</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
@@ -150,22 +143,25 @@ const PatientFilesPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {file.specialty?.name || '-'}
+                        {file.suggested_specialty?.name || '-'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {(Array.isArray(file.symptoms) ? file.symptoms : []).slice(0, 3).map((s, i) => (
-                          <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700">
-                            {s}
+                        {(file.symptoms || []).slice(0, 3).map((s) => (
+                          <span key={s.id} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700">
+                            {s.name}
                           </span>
                         ))}
-                        {Array.isArray(file.symptoms) && file.symptoms.length > 3 && (
-                          <span className="text-xs text-gray-500">+{file.symptoms.length - 3}</span>
+                        {(file.symptoms || []).length > 3 && (
+                          <span className="text-xs text-gray-500">+{file.symptoms!.length - 3}</span>
+                        )}
+                        {(!file.symptoms || file.symptoms.length === 0) && (
+                          <span className="text-xs text-gray-400">{file.symptoms_selected.length} symptome(s)</span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">{getSeverityBadge(file.severity)}</td>
+                    <td className="px-6 py-4">{getConfidenceBadge(file.confidence_score)}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{formatDate(file.created_at)}</td>
                     <td className="px-6 py-4 text-right">
                       <button
@@ -231,49 +227,52 @@ const PatientFilesPage: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Specialite</p>
-                  <p className="text-sm text-gray-900">{selectedFile.specialty?.name || '-'}</p>
+                  <p className="text-sm font-medium text-gray-500">Specialite suggeree</p>
+                  <p className="text-sm text-gray-900">{selectedFile.suggested_specialty?.name || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Severite</p>
-                  {getSeverityBadge(selectedFile.severity)}
+                  <p className="text-sm font-medium text-gray-500">Score de confiance IA</p>
+                  {getConfidenceBadge(selectedFile.confidence_score)}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Duree des symptomes</p>
-                  <p className="text-sm text-gray-900">{selectedFile.duration || '-'}</p>
+                  <p className="text-sm font-medium text-gray-500">Date de creation</p>
+                  <p className="text-sm text-gray-900">{formatDate(selectedFile.created_at)}</p>
                 </div>
               </div>
 
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-2">Symptomes</p>
+                <p className="text-sm font-medium text-gray-500 mb-2">Symptomes selectionnes</p>
                 <div className="flex flex-wrap gap-2">
-                  {(Array.isArray(selectedFile.symptoms) ? selectedFile.symptoms : []).map((s, i) => (
-                    <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-50 text-blue-700">
-                      {s}
+                  {(selectedFile.symptoms || []).length > 0 ? (
+                    selectedFile.symptoms!.map((s) => (
+                      <span key={s.id} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-50 text-blue-700">
+                        {s.name}
+                        {s.category && <span className="ml-1 text-blue-400 text-xs">({s.category})</span>}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-gray-400">
+                      {selectedFile.symptoms_selected.length} symptome(s) (IDs: {selectedFile.symptoms_selected.join(', ')})
                     </span>
-                  ))}
+                  )}
                 </div>
               </div>
 
-              {selectedFile.notes && (
+              {selectedFile.additional_notes && (
                 <div>
                   <p className="text-sm font-medium text-gray-500 mb-1">Notes du patient</p>
-                  <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">{selectedFile.notes}</div>
+                  <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">{selectedFile.additional_notes}</div>
                 </div>
               )}
 
-              {selectedFile.ai_suggestion && (
+              {selectedFile.ai_recommendation && (
                 <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Suggestion IA</p>
+                  <p className="text-sm font-medium text-gray-500 mb-1">Recommandation IA</p>
                   <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-sm text-purple-700">
-                    {selectedFile.ai_suggestion}
+                    {selectedFile.ai_recommendation}
                   </div>
                 </div>
               )}
-
-              <div className="text-xs text-gray-400">
-                Fiche creee le {formatDate(selectedFile.created_at)}
-              </div>
             </div>
             <div className="px-6 py-3 border-t border-gray-200 flex justify-end">
               <button

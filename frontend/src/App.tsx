@@ -23,6 +23,10 @@ import AppointmentsPage from './pages/AppointmentsPage';
 import NewAppointmentPage from './pages/NewAppointmentPage';
 import DoctorsPage from './pages/DoctorsPage';
 
+// Common (tous les roles)
+import ProfilePage from './pages/ProfilePage';
+import NotificationsPage from './pages/NotificationsPage';
+
 // Phase 3 -- Admin
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AuditLogsPage from './pages/admin/AuditLogsPage';
@@ -39,16 +43,13 @@ import SecretaryDashboardPage from './pages/secretary/SecretaryDashboardPage';
 import AppointmentValidationPage from './pages/secretary/AppointmentValidationPage';
 import ScheduleManagementPage from './pages/secretary/ScheduleManagementPage';
 
-// Profil & Notifications
-import ProfilePage from './pages/ProfilePage';
-import NotificationsPage from './pages/NotificationsPage';
-
+// React Query client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
@@ -78,7 +79,7 @@ const App: React.FC = () => {
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
 
-              {/* Profil & Notifications */}
+              {/* Profil et Notifications (tous les roles) */}
               <Route path="profile" element={<ProfilePage />} />
               <Route path="notifications" element={<NotificationsPage />} />
 
@@ -112,7 +113,7 @@ const App: React.FC = () => {
                 }
               />
               <Route
-                path="doctor/patients"
+                path="patient-files"
                 element={
                   <ProtectedRoute allowedRoles={['doctor']}>
                     <PatientFilesPage />
@@ -146,18 +147,18 @@ const App: React.FC = () => {
                 }
               />
               <Route
-                path="specialties"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <SpecialtiesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
                 path="admin/doctors"
                 element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <DoctorsManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="specialties"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <SpecialtiesPage />
                   </ProtectedRoute>
                 }
               />
@@ -180,7 +181,7 @@ const App: React.FC = () => {
                 }
               />
               <Route
-                path="secretary/schedule"
+                path="secretary/schedules"
                 element={
                   <ProtectedRoute allowedRoles={['secretary', 'admin']}>
                     <ScheduleManagementPage />
@@ -189,7 +190,7 @@ const App: React.FC = () => {
               />
             </Route>
 
-            {/* ====== RETROCOMPATIBILITE ====== */}
+            {/* ====== RETROCOMPATIBILITE : anciennes URLs ====== */}
             <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
             <Route path="/preconsultation" element={<Navigate to="/app/preconsultation" replace />} />
             <Route path="/appointments" element={<Navigate to="/app/appointments" replace />} />
@@ -200,6 +201,8 @@ const App: React.FC = () => {
             <Route path="/admin/users" element={<Navigate to="/app/admin/users" replace />} />
             <Route path="/admin/audit-logs" element={<Navigate to="/app/admin/audit-logs" replace />} />
             <Route path="/specialties" element={<Navigate to="/app/specialties" replace />} />
+            <Route path="/profile" element={<Navigate to="/app/profile" replace />} />
+            <Route path="/notifications" element={<Navigate to="/app/notifications" replace />} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import specialtyService from '../../services/specialtyService';
 import { Specialty } from '../../types';
+import * as LucideIcons from 'lucide-react';
+
+// Convert kebab-case icon name to PascalCase component name
+const getIconComponent = (iconName: string): React.ElementType | null => {
+  if (!iconName) return null;
+  const pascalCase = iconName
+    .split('-')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+  const IconComp = (LucideIcons as any)[pascalCase];
+  return IconComp || null;
+};
 
 const SpecialtiesPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -58,15 +70,25 @@ const SpecialtiesPage: React.FC = () => {
     setShowForm(true);
   };
 
+  const renderIcon = (iconName: string | undefined) => {
+    if (!iconName) return null;
+    const IconComp = getIconComponent(iconName);
+    if (IconComp) {
+      return <IconComp className="w-6 h-6 text-primary-600" />;
+    }
+    // Fallback: show as text if not a valid Lucide icon (e.g. emoji)
+    return <span className="text-2xl">{iconName}</span>;
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des Spécialités</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Gestion des Specialites</h1>
         <button
           onClick={() => { setShowForm(!showForm); setEditingSpecialty(null); setFormData({ name: '', description: '', icon: '' }); }}
           className="btn-primary"
         >
-          {showForm ? 'Annuler' : '+ Nouvelle spécialité'}
+          {showForm ? 'Annuler' : '+ Nouvelle specialite'}
         </button>
       </div>
 
@@ -74,7 +96,7 @@ const SpecialtiesPage: React.FC = () => {
       {showForm && (
         <div className="card mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            {editingSpecialty ? 'Modifier la spécialité' : 'Nouvelle spécialité'}
+            {editingSpecialty ? 'Modifier la specialite' : 'Nouvelle specialite'}
           </h2>
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -94,13 +116,13 @@ const SpecialtiesPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Icône (emoji)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Icone (nom Lucide)</label>
                 <input
                   type="text"
                   value={formData.icon}
                   onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
                   className="input-field"
-                  placeholder="🏥"
+                  placeholder="heart-pulse, brain, eye..."
                 />
               </div>
             </div>
@@ -119,7 +141,7 @@ const SpecialtiesPage: React.FC = () => {
                 disabled={createMutation.isPending || updateMutation.isPending}
                 className="btn-primary disabled:opacity-50"
               >
-                {editingSpecialty ? 'Modifier' : 'Créer'}
+                {editingSpecialty ? 'Modifier' : 'Creer'}
               </button>
               <button type="button" onClick={() => setShowForm(false)} className="btn-secondary">
                 Annuler
@@ -129,7 +151,7 @@ const SpecialtiesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Liste des spécialités */}
+      {/* Liste des specialites */}
       {isLoading ? (
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -140,7 +162,9 @@ const SpecialtiesPage: React.FC = () => {
             <div key={specialty.id} className="card">
               <div className="flex items-start justify-between">
                 <div className="flex items-center">
-                  {specialty.icon && <span className="text-2xl mr-3">{specialty.icon}</span>}
+                  <div className="mr-3 flex items-center justify-center w-10 h-10 bg-primary-50 rounded-lg">
+                    {renderIcon(specialty.icon)}
+                  </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">{specialty.name}</h3>
                     {specialty.description && (
@@ -158,7 +182,7 @@ const SpecialtiesPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    if (window.confirm(`Supprimer la spécialité "${specialty.name}" ?`)) {
+                    if (window.confirm(`Supprimer la specialite "${specialty.name}" ?`)) {
                       deleteMutation.mutate(specialty.id);
                     }
                   }}

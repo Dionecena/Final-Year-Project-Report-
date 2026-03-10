@@ -39,6 +39,9 @@ import SecretaryDashboardPage from './pages/secretary/SecretaryDashboardPage';
 import AppointmentValidationPage from './pages/secretary/AppointmentValidationPage';
 import ScheduleManagementPage from './pages/secretary/ScheduleManagementPage';
 
+// Notifications
+import NotificationsPage from './pages/NotificationsPage';
+
 // Profil
 import ProfilePage from './pages/ProfilePage';
 
@@ -77,9 +80,6 @@ const App: React.FC = () => {
             >
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
-
-              {/* Profil utilisateur */}
-              <Route path="profile" element={<ProfilePage />} />
 
               {/* Phase 2 -- Core Business */}
               <Route
@@ -179,13 +179,19 @@ const App: React.FC = () => {
                 }
               />
               <Route
-                path="secretary/schedule"
+                path="secretary/schedules"
                 element={
                   <ProtectedRoute allowedRoles={['secretary', 'admin']}>
                     <ScheduleManagementPage />
                   </ProtectedRoute>
                 }
               />
+
+              {/* Notifications -- tous les roles */}
+              <Route path="notifications" element={<NotificationsPage />} />
+
+              {/* Profil */}
+              <Route path="profile" element={<ProfilePage />} />
             </Route>
 
             {/* ====== RETROCOMPATIBILITE : anciennes URLs ====== */}
@@ -199,6 +205,7 @@ const App: React.FC = () => {
             <Route path="/admin/users" element={<Navigate to="/app/admin/users" replace />} />
             <Route path="/admin/audit-logs" element={<Navigate to="/app/admin/audit-logs" replace />} />
             <Route path="/specialties" element={<Navigate to="/app/specialties" replace />} />
+            <Route path="/notifications" element={<Navigate to="/app/notifications" replace />} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

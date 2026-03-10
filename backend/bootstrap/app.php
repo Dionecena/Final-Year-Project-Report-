@@ -17,6 +17,19 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
 
+        // CORS dynamique : autoriser le frontend (local + production)
+        $allowedOrigins = array_filter([
+            'http://localhost:3000',
+            env('FRONTEND_URL'),
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+        ]);
+
+        // Configuration CORS via le middleware HandleCors de Laravel
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+
         // Ajouter les headers de securite sur toutes les reponses
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })

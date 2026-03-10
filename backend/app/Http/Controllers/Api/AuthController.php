@@ -234,4 +234,50 @@ class AuthController extends Controller
             'message' => 'Mot de passe reinitialise avec succes. Vous pouvez vous connecter.',
         ]);
     }
+
+    /**
+     * Modifier le profil de l'utilisateur connecte
+     * PUT /api/auth/profile
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'current_password' => 'required_with:new_password|string',
+            'new_password' => ['nullable', 'confirmed', Password::min(8)],
+        ]);
+
+        // Verifier le mot de passe actuel si changement de MDP
+        if (isset($validated['current_password'])) {
+            if (!Hash::check($validated['current_password'], $user->password)) {
+                return response()->json([
+                    'message' => 'Le mot de passe actuel est incorrect.',
+                    'errors' => ['current_password' => ['Le mot de passe actuel est incorrect.']],
+                ], 422);
+            }
+        }
+
+        $oldData = $user->only(['name', 'email', 'phone']);
+
+        // Mettre a jour les champs
+        if (isset($validated['name'])) $user->name = $validated['name'];
+        if (isset($validated['email'])) $user->email = $validated['email'];
+        if (array_key_exists('phone', $validated)) $user->phone = $validated['phone'];
+        if (isset($validated['new_password'])) {
+            $user->password = Hash::make($validated['new_password']);
+        }
+
+        $user->save();
+
+        AuditService::log('profile_update', 'User', $user->id, $oldData, $user->only(['name', 'email', 'phone']));
+
+        return response()->json([
+            'message' => 'Profil mis a jour avec succes.',
+            'data' => $user,
+        ]);
+    }
 }

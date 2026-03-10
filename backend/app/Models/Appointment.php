@@ -12,6 +12,8 @@ class Appointment extends Model
     protected $fillable = [
         'patient_id',
         'doctor_id',
+        'specialty_id',
+        'reason',
         'pre_consultation_id',
         'scheduled_at',
         'status',
@@ -33,34 +35,13 @@ class Appointment extends Model
         return $this->belongsTo(Doctor::class);
     }
 
+    public function specialty()
+    {
+        return $this->belongsTo(Specialty::class);
+    }
+
     public function preConsultation()
     {
         return $this->belongsTo(PreConsultation::class);
-    }
-
-    // Scopes
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
-    }
-
-    public function scopeConfirmed($query)
-    {
-        return $query->where('status', 'confirmed');
-    }
-
-    public function scopeUpcoming($query)
-    {
-        return $query->where('scheduled_at', '>=', now())->orderBy('scheduled_at');
-    }
-
-    public function scopeForDoctor($query, int $doctorId)
-    {
-        return $query->where('doctor_id', $doctorId);
-    }
-
-    public function scopeForPatient($query, int $patientId)
-    {
-        return $query->where('patient_id', $patientId);
     }
 }

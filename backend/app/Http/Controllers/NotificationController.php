@@ -9,20 +9,21 @@ use Illuminate\Http\JsonResponse;
 class NotificationController extends Controller
 {
     /**
-     * Get all notifications for the authenticated user.
-     * Supports ?unread_only=true and ?type=appointment_confirmed filters.
+     * Lister les notifications de l'utilisateur connecte
      */
     public function index(Request $request): JsonResponse
     {
         $query = Notification::where('user_id', $request->user()->id)
             ->orderBy('created_at', 'desc');
 
-        if ($request->boolean('unread_only')) {
-            $query->unread();
+        // Filtrer par type si specifie
+        if ($request->has('type')) {
+            $query->ofType($request->type);
         }
 
-        if ($request->filled('type')) {
-            $query->ofType($request->input('type'));
+        // Filtrer non lues seulement
+        if ($request->boolean('unread_only')) {
+            $query->unread();
         }
 
         $notifications = $query->paginate($request->input('per_page', 20));
@@ -31,7 +32,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Get unread notification count.
+     * Nombre de notifications non lues
      */
     public function unreadCount(Request $request): JsonResponse
     {
@@ -43,7 +44,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Mark a single notification as read.
+     * Marquer une notification comme lue
      */
     public function markAsRead(Request $request, int $id): JsonResponse
     {
@@ -53,13 +54,13 @@ class NotificationController extends Controller
         $notification->markAsRead();
 
         return response()->json([
-            'message' => 'Notification marked as read.',
+            'message' => 'Notification marquee comme lue.',
             'notification' => $notification->fresh(),
         ]);
     }
 
     /**
-     * Mark all notifications as read for the authenticated user.
+     * Marquer toutes les notifications comme lues
      */
     public function markAllAsRead(Request $request): JsonResponse
     {
@@ -68,12 +69,12 @@ class NotificationController extends Controller
             ->update(['read_at' => now()]);
 
         return response()->json([
-            'message' => 'All notifications marked as read.',
+            'message' => 'Toutes les notifications ont ete marquees comme lues.',
         ]);
     }
 
     /**
-     * Delete a single notification.
+     * Supprimer une notification
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
@@ -83,21 +84,22 @@ class NotificationController extends Controller
         $notification->delete();
 
         return response()->json([
-            'message' => 'Notification deleted.',
+            'message' => 'Notification supprimee.',
         ]);
     }
 
     /**
-     * Delete all read notifications for the authenticated user.
+     * Supprimer toutes les notifications lues
      */
-    public function destroyRead(Request $request): JsonResponse
+    public function clearRead(Request $request): JsonResponse
     {
         $deleted = Notification::where('user_id', $request->user()->id)
-            ->read()
+            ->whereNotNull('read_at')
             ->delete();
 
         return response()->json([
-            'message' => "{$deleted} read notification(s) deleted.",
+            'message' => "{$deleted} notification(s) supprimee(s).",
+            'deleted_count' => $deleted,
         ]);
     }
 }

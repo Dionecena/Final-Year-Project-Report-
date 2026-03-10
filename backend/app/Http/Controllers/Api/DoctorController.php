@@ -12,14 +12,14 @@ use Illuminate\Http\Request;
 class DoctorController extends Controller
 {
     /**
-     * Lister tous les médecins
+     * Lister tous les medecins
      * GET /api/doctors
      */
     public function index(Request $request): JsonResponse
     {
         $query = Doctor::with(['user', 'specialty']);
 
-        // Filtrer par spécialité
+        // Filtrer par specialite
         if ($request->has('specialty_id')) {
             $query->where('specialty_id', $request->specialty_id);
         }
@@ -33,7 +33,7 @@ class DoctorController extends Controller
     }
 
     /**
-     * Afficher un médecin
+     * Afficher un medecin
      * GET /api/doctors/{id}
      */
     public function show(Doctor $doctor): JsonResponse
@@ -47,7 +47,7 @@ class DoctorController extends Controller
     }
 
     /**
-     * Créer un profil médecin (admin uniquement)
+     * Creer un profil medecin (admin uniquement)
      * POST /api/doctors
      */
     public function store(Request $request): JsonResponse
@@ -69,20 +69,20 @@ class DoctorController extends Controller
         return response()->json([
             'success' => true,
             'data' => $doctor,
-            'message' => 'Profil médecin créé avec succès',
+            'message' => 'Profil medecin cree avec succes',
         ], 201);
     }
 
     /**
-     * Modifier un profil médecin
+     * Modifier un profil medecin
      * PUT /api/doctors/{id}
      */
     public function update(Request $request, Doctor $doctor): JsonResponse
     {
-        // Seul l'admin ou le médecin lui-même peut modifier
+        // Seul l'admin ou le medecin lui-meme peut modifier
         $user = auth()->user();
         if (!$user->isAdmin() && $user->id !== $doctor->user_id) {
-            abort(403, 'Accès non autorisé');
+            abort(403, 'Acces non autorise');
         }
 
         $validated = $request->validate([
@@ -100,12 +100,12 @@ class DoctorController extends Controller
         return response()->json([
             'success' => true,
             'data' => $doctor,
-            'message' => 'Profil médecin modifié avec succès',
+            'message' => 'Profil medecin modifie avec succes',
         ]);
     }
 
     /**
-     * Supprimer un profil médecin (admin uniquement)
+     * Supprimer un profil medecin (admin uniquement)
      * DELETE /api/doctors/{id}
      */
     public function destroy(Doctor $doctor): JsonResponse
@@ -119,66 +119,54 @@ class DoctorController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Profil médecin supprimé avec succès',
+            'message' => 'Profil medecin supprime avec succes',
         ]);
     }
 
     /**
-     * Fiches de préconsultation pour le médecin connecté
+     * Lister les fiches de pre-consultation des patients du medecin connecte.
      * GET /api/doctor/pre-consultations
      *
-     * Retourne les préconsultations dont la spécialité suggérée
-     * correspond à celle du médecin, paginées et filtrables.
+     * Retourne les pre-consultations liees aux rendez-vous assignes
+     * au medecin authentifie, avec patient, specialite suggeree et symptomes.
      */
     public function preConsultations(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $doctor = Doctor::where('user_id', $user->id)->firstOrFail();
+        $user = auth()->user();
 
-        $query = PreConsultation::with(['user:id,name,email,phone', 'symptoms'])
-            ->where('suggested_specialty_id', $doctor->specialty_id)
-            ->orderByDesc('created_at');
+        // Recuperer le profil Doctor lie a l'utilisateur connecte
+        $doctor = Doctor::where('user_id', $user->id)->first();
 
-        // Filtre par niveau de confiance
-        if ($request->has('min_confidence')) {
-            $query->where('confidence_score', '>=', (float) $request->min_confidence);
+        if (!$doctor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Profil medecin introuvable pour cet utilisateur.',
+            ], 404);
         }
 
-        // Filtre par date
-        if ($request->has('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->has('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        // Recherche par nom patient
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'ilike', "%{$search}%");
-            });
-        }
-
-        $perPage = $request->input('per_page', 15);
-        $preConsultations = $query->paginate($perPage);
+        // Pre-consultations liees aux RDV de ce medecin
+        $preConsultations = PreConsultation::whereHas('appointment', function ($query) use ($doctor) {
+                $query->where('doctor_id', $doctor->id);
+            })
+            ->with([
+                'patient:id,name,email,phone',
+                'suggestedSpecialty:id,name',
+                'symptoms:id,name,category',
+                'appointment:id,pre_consultation_id,scheduled_at,status',
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json([
             'success' => true,
-            'data' => $preConsultations->items(),
-            'meta' => [
-                'current_page' => $preConsultations->currentPage(),
-                'last_page' => $preConsultations->lastPage(),
-                'per_page' => $preConsultations->perPage(),
-                'total' => $preConsultations->total(),
-            ],
+            'data' => $preConsultations,
         ]);
     }
 
     private function authorizeAdmin(): void
     {
         if (!auth()->user() || !auth()->user()->isAdmin()) {
-            abort(403, 'Accès réservé aux administrateurs');
+            abort(403, 'Acces reserve aux administrateurs');
         }
     }
 }

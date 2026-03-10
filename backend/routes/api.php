@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\SecretaryController;
 use App\Http\Controllers\Api\SpecialtyController;
 use App\Http\Controllers\Api\SymptomController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -116,19 +117,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/admin/users/{user}/role', [UserController::class, 'updateRole']);
 
     // ============================================
-    // Phase 5 -- Secretaire
+    // Notifications
     // ============================================
-    Route::prefix('secretary')->group(function () {
-        Route::get('/appointments', [SecretaryController::class, 'pendingAppointments']);
-        Route::put('/appointments/{appointment}/validate', [SecretaryController::class, 'validateAppointment']);
-        Route::put('/appointments/{appointment}/reject', [SecretaryController::class, 'rejectAppointment']);
-        Route::get('/stats', [SecretaryController::class, 'stats']);
-        Route::get('/online-booking-status', [SecretaryController::class, 'onlineBookingStatus']);
-        Route::put('/online-booking-status', [SecretaryController::class, 'toggleOnlineBooking']);
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::patch('/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::delete('/clear-read', [NotificationController::class, 'clearRead']);
+        Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
-
-    // ============================================
-    // Phase 6 -- Fiches pre-consultation medecin
-    // ============================================
-    Route::get('/doctor/pre-consultations', [DoctorController::class, 'preConsultations']);
 });

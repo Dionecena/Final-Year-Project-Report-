@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\PreConsultationController;
 use App\Http\Controllers\Api\ScheduleController;
+use App\Http\Controllers\Api\SecretaryController;
 use App\Http\Controllers\Api\SpecialtyController;
 use App\Http\Controllers\Api\SymptomController;
 use App\Http\Controllers\Api\UserController;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Routes API — MediConsult
+| Routes API -- MediConsult
 |--------------------------------------------------------------------------
 */
 
@@ -24,25 +25,27 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login'])
-        ->middleware('throttle:5,1'); // 5 tentatives/minute anti brute-force
+        ->middleware('throttle:5,1');
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
-// Spécialités — lecture publique
+// Specialites -- lecture publique
 Route::get('/specialties', [SpecialtyController::class, 'index']);
 Route::get('/specialties/{specialty}', [SpecialtyController::class, 'show']);
 
-// Symptômes — lecture publique
+// Symptomes -- lecture publique
 Route::get('/symptoms', [SymptomController::class, 'index']);
 Route::get('/symptoms/categories', [SymptomController::class, 'categories']);
 
-// Médecins — lecture publique
+// Medecins -- lecture publique
 Route::get('/doctors', [DoctorController::class, 'index']);
 Route::get('/doctors/{doctor}', [DoctorController::class, 'show']);
 Route::get('/doctors/{doctor}/schedules', [ScheduleController::class, 'index']);
 Route::get('/doctors/{doctor}/slots', [AppointmentController::class, 'availableSlots']);
 
 // ============================================
-// Routes protégées (token Sanctum requis)
+// Routes protegees (token Sanctum requis)
 // ============================================
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -53,18 +56,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/profile', [AuthController::class, 'updateProfile']);
     });
 
-    // Spécialités — écriture (admin)
+    // Specialites -- ecriture (admin)
     Route::post('/specialties', [SpecialtyController::class, 'store']);
     Route::put('/specialties/{specialty}', [SpecialtyController::class, 'update']);
     Route::delete('/specialties/{specialty}', [SpecialtyController::class, 'destroy']);
 
-    // Médecins — écriture
+    // Medecins -- ecriture
     Route::post('/doctors', [DoctorController::class, 'store']);
     Route::put('/doctors/{doctor}', [DoctorController::class, 'update']);
     Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy']);
 
     // ============================================
-    // Phase 2 — Préconsultation
+    // Phase 2 -- Preconsultation
     // ============================================
     Route::prefix('pre-consultations')->group(function () {
         Route::get('/', [PreConsultationController::class, 'index']);
@@ -74,7 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ============================================
-    // Phase 2 — Rendez-vous
+    // Phase 2 -- Rendez-vous
     // ============================================
     Route::prefix('appointments')->group(function () {
         Route::get('/', [AppointmentController::class, 'index']);
@@ -85,7 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ============================================
-    // Phase 2 — Plannings médecins
+    // Phase 2 -- Plannings medecins
     // ============================================
     Route::prefix('schedules')->group(function () {
         Route::post('/', [ScheduleController::class, 'store']);
@@ -94,21 +97,38 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ============================================
-    // Phase 3 — Dashboard & Statistiques
+    // Phase 3 -- Dashboard & Statistiques
     // ============================================
     Route::get('/admin/dashboard', [DashboardController::class, 'stats']);
     Route::get('/doctor/dashboard', [DashboardController::class, 'doctorStats']);
 
     // ============================================
-    // Phase 3 — Audit & Sécurité (admin)
+    // Phase 3 -- Audit & Securite (admin)
     // ============================================
     Route::get('/admin/audit-logs', [AuditLogController::class, 'index']);
     Route::get('/admin/security-stats', [AuditLogController::class, 'securityStats']);
 
     // ============================================
-    // Phase 3 — Gestion des utilisateurs (admin)
+    // Phase 3 -- Gestion des utilisateurs (admin)
     // ============================================
     Route::get('/admin/users', [UserController::class, 'index']);
     Route::put('/admin/users/{user}/toggle-status', [UserController::class, 'toggleStatus']);
     Route::put('/admin/users/{user}/role', [UserController::class, 'updateRole']);
+
+    // ============================================
+    // Phase 5 -- Secretaire
+    // ============================================
+    Route::prefix('secretary')->group(function () {
+        Route::get('/appointments', [SecretaryController::class, 'pendingAppointments']);
+        Route::put('/appointments/{appointment}/validate', [SecretaryController::class, 'validateAppointment']);
+        Route::put('/appointments/{appointment}/reject', [SecretaryController::class, 'rejectAppointment']);
+        Route::get('/stats', [SecretaryController::class, 'stats']);
+        Route::get('/online-booking-status', [SecretaryController::class, 'onlineBookingStatus']);
+        Route::put('/online-booking-status', [SecretaryController::class, 'toggleOnlineBooking']);
+    });
+
+    // ============================================
+    // Phase 6 -- Fiches pre-consultation medecin
+    // ============================================
+    Route::get('/doctor/pre-consultations', [DoctorController::class, 'preConsultations']);
 });

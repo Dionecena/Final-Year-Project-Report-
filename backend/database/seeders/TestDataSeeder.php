@@ -9,8 +9,8 @@ use App\Models\Schedule;
 use App\Models\Specialty;
 use App\Models\Symptom;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class TestDataSeeder extends Seeder
@@ -19,184 +19,170 @@ class TestDataSeeder extends Seeder
     {
         $this->command->info('Creation des donnees de test...');
 
-        // ============================================
-        // 1. MEDECINS (4 medecins avec specialites)
-        // ============================================
-        $doctors = [
-            [
-                'user' => ['name' => 'Dr. Amadou Diallo', 'email' => 'dr.diallo@mediconsult.com', 'phone' => '771234567', 'role' => 'doctor'],
-                'doctor' => ['bio' => 'Cardiologue experimentee, 15 ans de pratique au CHU de Dakar', 'license_number' => 'MED-2024-001'],
-                'specialty' => 'Cardiologie',
-            ],
-            [
-                'user' => ['name' => 'Dr. Fatou Sow', 'email' => 'dr.sow@mediconsult.com', 'phone' => '772345678', 'role' => 'doctor'],
-                'doctor' => ['bio' => 'Pediatre specialisee en neonatologie', 'license_number' => 'MED-2024-002'],
-                'specialty' => 'Pediatrie',
-            ],
-            [
-                'user' => ['name' => 'Dr. Moussa Ndiaye', 'email' => 'dr.ndiaye@mediconsult.com', 'phone' => '773456789', 'role' => 'doctor'],
-                'doctor' => ['bio' => 'Medecin generaliste, cabinet prive a Plateau', 'license_number' => 'MED-2024-003'],
-                'specialty' => 'Medecine Generale',
-            ],
-            [
-                'user' => ['name' => 'Dr. Aissatou Ba', 'email' => 'dr.ba@mediconsult.com', 'phone' => '774567890', 'role' => 'doctor'],
-                'doctor' => ['bio' => 'Dermatologue, specialiste en dermatologie esthetique', 'license_number' => 'MED-2024-004'],
-                'specialty' => 'Dermatologie',
-            ],
+        // 1. Medecins
+        $specialties = Specialty::all();
+        $doctorsData = [
+            ['name' => 'Dr. Amadou Diallo', 'email' => 'dr.diallo@mediconsult.com', 'specialty_index' => 0],
+            ['name' => 'Dr. Fatou Sow', 'email' => 'dr.sow@mediconsult.com', 'specialty_index' => 1],
+            ['name' => 'Dr. Moussa Ndiaye', 'email' => 'dr.ndiaye@mediconsult.com', 'specialty_index' => 2],
+            ['name' => 'Dr. Aissatou Ba', 'email' => 'dr.ba@mediconsult.com', 'specialty_index' => 3],
         ];
 
-        foreach ($doctors as $data) {
+        $doctors = [];
+        foreach ($doctorsData as $data) {
             $user = User::firstOrCreate(
-                ['email' => $data['user']['email']],
-                array_merge($data['user'], ['password' => Hash::make('Doctor@1234!'), 'is_active' => true])
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'password' => Hash::make('Doctor@1234!'),
+                    'role' => 'doctor',
+                    'phone' => '+221 7' . rand(10, 99) . ' ' . rand(100, 999) . ' ' . rand(10, 99) . ' ' . rand(10, 99),
+                ]
             );
 
-            $specialty = Specialty::where('name', $data['specialty'])->first();
+            $specialty = $specialties[$data['specialty_index']] ?? $specialties->first();
 
-            Doctor::firstOrCreate(
+            $doctor = Doctor::firstOrCreate(
                 ['user_id' => $user->id],
-                array_merge($data['doctor'], ['user_id' => $user->id, 'specialty_id' => $specialty?->id])
+                [
+                    'specialty_id' => $specialty->id,
+                    'license_number' => 'MED-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
+                    'consultation_fee' => rand(15, 50) * 1000,
+                    'is_available' => true,
+                ]
             );
 
-            // Creer des creneaux pour chaque medecin (lundi-vendredi, 8h-17h)
-            if ($specialty) {
-                foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as $day) {
-                    Schedule::firstOrCreate(
-                        ['doctor_id' => $user->doctor->id ?? Doctor::where('user_id', $user->id)->first()->id, 'day_of_week' => $day],
-                        [
-                            'doctor_id' => $user->doctor->id ?? Doctor::where('user_id', $user->id)->first()->id,
-                            'day_of_week' => $day,
-                            'start_time' => '08:00',
-                            'end_time' => '17:00',
-                            'slot_duration' => 30,
-                            'is_active' => true,
-                        ]
-                    );
-                }
+            $doctors[] = $doctor;
+
+            // Creneaux horaires: lundi(1) a vendredi(5) en smallint
+            foreach ([1, 2, 3, 4, 5] as $day) {
+                Schedule::firstOrCreate(
+                    ['doctor_id' => $doctor->id, 'day_of_week' => $day],
+                    [
+                        'start_time' => '08:00',
+                        'end_time' => '17:00',
+                        'is_available' => true,
+                    ]
+                );
             }
         }
 
-        $this->command->info('4 medecins crees avec leurs creneaux.');
+        $this->command->info('4 medecins crees avec creneaux.');
 
-        // ============================================
-        // 2. PATIENTS (6 patients)
-        // ============================================
-        $patients = [
-            ['name' => 'Ousmane Fall', 'email' => 'ousmane.fall@gmail.com', 'phone' => '775001001'],
-            ['name' => 'Mariama Diop', 'email' => 'mariama.diop@gmail.com', 'phone' => '775002002'],
-            ['name' => 'Ibrahima Sy', 'email' => 'ibrahima.sy@gmail.com', 'phone' => '775003003'],
-            ['name' => 'Awa Niang', 'email' => 'awa.niang@gmail.com', 'phone' => '775004004'],
-            ['name' => 'Cheikh Mbaye', 'email' => 'cheikh.mbaye@gmail.com', 'phone' => '775005005'],
-            ['name' => 'Ndoye Coumba', 'email' => 'ndoye.coumba@gmail.com', 'phone' => '775006006'],
+        // 2. Patients
+        $patientsData = [
+            ['name' => 'Ousmane Fall', 'email' => 'ousmane.fall@gmail.com'],
+            ['name' => 'Mariama Diop', 'email' => 'mariama.diop@gmail.com'],
+            ['name' => 'Ibrahima Sy', 'email' => 'ibrahima.sy@gmail.com'],
+            ['name' => 'Awa Niang', 'email' => 'awa.niang@gmail.com'],
+            ['name' => 'Cheikh Mbaye', 'email' => 'cheikh.mbaye@gmail.com'],
+            ['name' => 'Coumba Ndoye', 'email' => 'ndoye.coumba@gmail.com'],
         ];
 
-        foreach ($patients as $patient) {
-            User::firstOrCreate(
-                ['email' => $patient['email']],
-                array_merge($patient, ['password' => Hash::make('Patient@1234!'), 'role' => 'patient', 'is_active' => true])
+        $patients = [];
+        foreach ($patientsData as $data) {
+            $patients[] = User::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'password' => Hash::make('Patient@1234!'),
+                    'role' => 'patient',
+                    'phone' => '+221 7' . rand(10, 99) . ' ' . rand(100, 999) . ' ' . rand(10, 99) . ' ' . rand(10, 99),
+                    'date_of_birth' => Carbon::now()->subYears(rand(20, 60))->subDays(rand(1, 365))->format('Y-m-d'),
+                    'gender' => rand(0, 1) ? 'male' : 'female',
+                    'address' => ['Dakar', 'Thies', 'Saint-Louis', 'Ziguinchor', 'Kaolack'][rand(0, 4)] . ', Senegal',
+                ]
             );
         }
 
         $this->command->info('6 patients crees.');
 
-        // ============================================
-        // 3. RENDEZ-VOUS (8 rendez-vous varies)
-        // ============================================
-        $drDiallo = Doctor::whereHas('user', fn($q) => $q->where('email', 'dr.diallo@mediconsult.com'))->first();
-        $drSow = Doctor::whereHas('user', fn($q) => $q->where('email', 'dr.sow@mediconsult.com'))->first();
-        $drNdiaye = Doctor::whereHas('user', fn($q) => $q->where('email', 'dr.ndiaye@mediconsult.com'))->first();
-        $drBa = Doctor::whereHas('user', fn($q) => $q->where('email', 'dr.ba@mediconsult.com'))->first();
+        // 3. Rendez-vous
+        $statuses = ['confirmed', 'pending', 'completed', 'cancelled'];
+        $appointments = [];
 
-        $ousmane = User::where('email', 'ousmane.fall@gmail.com')->first();
-        $mariama = User::where('email', 'mariama.diop@gmail.com')->first();
-        $ibrahima = User::where('email', 'ibrahima.sy@gmail.com')->first();
-        $awa = User::where('email', 'awa.niang@gmail.com')->first();
-        $cheikh = User::where('email', 'cheikh.mbaye@gmail.com')->first();
-        $ndoye = User::where('email', 'ndoye.coumba@gmail.com')->first();
+        $appointmentsData = [
+            ['patient' => 0, 'doctor' => 0, 'offset_days' => -7, 'status' => 'completed', 'reason' => 'Douleurs thoraciques recurrentes'],
+            ['patient' => 1, 'doctor' => 1, 'offset_days' => -3, 'status' => 'completed', 'reason' => 'Consultation dermatologique - eruption cutanee'],
+            ['patient' => 2, 'doctor' => 2, 'offset_days' => 0, 'status' => 'confirmed', 'reason' => 'Suivi post-operatoire genou'],
+            ['patient' => 3, 'doctor' => 3, 'offset_days' => 1, 'status' => 'pending', 'reason' => 'Consultation pediatrique pour fievre persistante'],
+            ['patient' => 4, 'doctor' => 0, 'offset_days' => 3, 'status' => 'confirmed', 'reason' => 'Bilan cardiaque annuel'],
+            ['patient' => 5, 'doctor' => 1, 'offset_days' => 5, 'status' => 'pending', 'reason' => 'Acne severe - demande de traitement'],
+            ['patient' => 0, 'doctor' => 2, 'offset_days' => -14, 'status' => 'cancelled', 'reason' => 'Douleurs au dos'],
+            ['patient' => 1, 'doctor' => 3, 'offset_days' => 7, 'status' => 'confirmed', 'reason' => 'Vaccination enfant'],
+        ];
 
-        if ($drDiallo && $drSow && $drNdiaye && $drBa && $ousmane && $mariama) {
-            $appointments = [
-                // Rendez-vous passes (confirmes)
-                ['patient_id' => $ousmane->id, 'doctor_id' => $drDiallo->id, 'scheduled_at' => now()->subDays(5)->setTime(9, 0), 'status' => 'completed', 'reason' => 'Douleur thoracique recurrente', 'notes' => 'ECG normal, stress professionnel identifie'],
-                ['patient_id' => $mariama->id, 'doctor_id' => $drSow->id, 'scheduled_at' => now()->subDays(3)->setTime(10, 30), 'status' => 'completed', 'reason' => 'Consultation pediatrique de routine', 'notes' => 'Croissance normale, vaccinations a jour'],
+        foreach ($appointmentsData as $data) {
+            $scheduledAt = Carbon::now()->addDays($data['offset_days'])->setHour(rand(8, 16))->setMinute(rand(0, 1) * 30);
 
-                // Rendez-vous aujourd hui
-                ['patient_id' => $ibrahima->id, 'doctor_id' => $drNdiaye->id, 'scheduled_at' => now()->setTime(14, 0), 'status' => 'confirmed', 'reason' => 'Fatigue persistante et maux de tete'],
-                ['patient_id' => $awa->id, 'doctor_id' => $drBa->id, 'scheduled_at' => now()->setTime(15, 30), 'status' => 'confirmed', 'reason' => 'Eruption cutanee sur les bras'],
+            $appointment = Appointment::create([
+                'patient_id' => $patients[$data['patient']]->id,
+                'doctor_id' => $doctors[$data['doctor']]->id,
+                'scheduled_at' => $scheduledAt,
+                'status' => $data['status'],
+                'reason' => $data['reason'],
+                'cancellation_reason' => $data['status'] === 'cancelled' ? 'Patient indisponible' : null,
+            ]);
 
-                // Rendez-vous futurs
-                ['patient_id' => $cheikh->id, 'doctor_id' => $drDiallo->id, 'scheduled_at' => now()->addDays(2)->setTime(9, 0), 'status' => 'pending', 'reason' => 'Palpitations cardiaques'],
-                ['patient_id' => $ndoye->id, 'doctor_id' => $drSow->id, 'scheduled_at' => now()->addDays(3)->setTime(11, 0), 'status' => 'pending', 'reason' => 'Fievre recurrente chez enfant de 3 ans'],
-                ['patient_id' => $ousmane->id, 'doctor_id' => $drNdiaye->id, 'scheduled_at' => now()->addDays(5)->setTime(10, 0), 'status' => 'confirmed', 'reason' => 'Suivi medical general'],
+            $appointments[] = $appointment;
+        }
 
-                // Rendez-vous annule
-                ['patient_id' => $mariama->id, 'doctor_id' => $drDiallo->id, 'scheduled_at' => now()->subDays(1)->setTime(16, 0), 'status' => 'cancelled', 'reason' => 'Controle tension arterielle', 'cancellation_reason' => 'Empechement personnel de la patiente'],
+        $this->command->info('8 rendez-vous crees.');
+
+        // 4. Pre-consultations IA
+        $symptoms = Symptom::all();
+
+        if ($symptoms->isNotEmpty() && count($appointments) >= 3) {
+            $preConsultationsData = [
+                [
+                    'appointment' => 0,
+                    'patient' => 0,
+                    'confidence' => 0.85,
+                    'suggested_specialty' => 'Cardiologie',
+                    'additional_notes' => 'Patient signale des douleurs thoraciques depuis 2 semaines, aggravees a l\'effort.',
+                    'ai_recommendation' => 'ECG recommande. Consultation cardiologique prioritaire.',
+                ],
+                [
+                    'appointment' => 2,
+                    'patient' => 2,
+                    'confidence' => 0.72,
+                    'suggested_specialty' => 'Orthopedie',
+                    'additional_notes' => 'Douleur au genou droit post-chirurgie, difficulte a marcher.',
+                    'ai_recommendation' => 'Radiographie de controle. Kinesitherapie suggeree.',
+                ],
+                [
+                    'appointment' => 3,
+                    'patient' => 3,
+                    'confidence' => 0.91,
+                    'suggested_specialty' => 'Pediatrie',
+                    'additional_notes' => 'Enfant de 4 ans avec fievre > 39C depuis 3 jours.',
+                    'ai_recommendation' => 'Bilan sanguin urgent. Possible infection bacterienne.',
+                ],
             ];
 
-            foreach ($appointments as $appt) {
-                Appointment::create($appt);
+            foreach ($preConsultationsData as $data) {
+                $pc = PreConsultation::create([
+                    'appointment_id' => $appointments[$data['appointment']]->id,
+                    'patient_id' => $patients[$data['patient']]->id,
+                    'confidence_score' => $data['confidence'],
+                    'suggested_specialty' => $data['suggested_specialty'],
+                    'additional_notes' => $data['additional_notes'],
+                    'ai_recommendation' => $data['ai_recommendation'],
+                ]);
+
+                // Attacher 2-4 symptomes aleatoires
+                $randomSymptoms = $symptoms->random(min(rand(2, 4), $symptoms->count()));
+                foreach ($randomSymptoms as $symptom) {
+                    $pc->symptoms()->attach($symptom->id, [
+                        'severity' => rand(1, 10),
+                        'duration_days' => rand(1, 30),
+                    ]);
+                }
             }
 
-            $this->command->info('8 rendez-vous crees.');
+            $this->command->info('3 pre-consultations IA creees avec symptomes.');
         }
 
-        // ============================================
-        // 4. PRE-CONSULTATIONS (3 pre-consultations IA)
-        // ============================================
-        $cardio = Specialty::where('name', 'Cardiologie')->first();
-        $pneumo = Specialty::where('name', 'Pneumologie')->first();
-        $neuro = Specialty::where('name', 'Neurologie')->first();
-
-        if ($ousmane && $cardio) {
-            $pc1 = PreConsultation::create([
-                'patient_id' => $ousmane->id,
-                'symptoms_selected' => json_encode(['Douleur thoracique', 'Palpitations cardiaques', 'Essoufflement']),
-                'suggested_specialty_id' => $cardio->id,
-                'confidence_score' => 0.92,
-                'additional_notes' => 'Patient signale des douleurs thoraciques depuis 2 semaines, surtout a l effort',
-                'ai_recommendation' => 'Consultation cardiologique urgente recommandee. Les symptomes (douleur thoracique + palpitations + essoufflement) suggerent une evaluation cardiaque approfondie avec ECG et echocardiographie.',
-                'status' => 'completed',
-            ]);
-
-            // Lier les symptomes via la table pivot
-            $symptomNames = ['Douleur thoracique', 'Palpitations cardiaques', 'Essoufflement'];
-            $symptomIds = Symptom::whereIn('name', $symptomNames)->pluck('id');
-            if ($pc1 && method_exists($pc1, 'symptoms')) {
-                try { $pc1->symptoms()->sync($symptomIds); } catch (\Exception $e) {}
-            }
-        }
-
-        if ($ibrahima && $neuro) {
-            $pc2 = PreConsultation::create([
-                'patient_id' => $ibrahima->id,
-                'symptoms_selected' => json_encode(['Maux de tete severes', 'Vertiges', 'Fatigue intense']),
-                'suggested_specialty_id' => $neuro->id,
-                'confidence_score' => 0.78,
-                'additional_notes' => 'Maux de tete quotidiens depuis 1 mois, vertiges au lever',
-                'ai_recommendation' => 'Consultation neurologique conseillee. Association cephalees severes + vertiges necessite un bilan neurologique. Scanner cerebral potentiellement indique.',
-                'status' => 'pending',
-            ]);
-
-            $symptomNames2 = ['Maux de tete severes', 'Vertiges', 'Fatigue intense'];
-            $symptomIds2 = Symptom::whereIn('name', $symptomNames2)->pluck('id');
-            if ($pc2 && method_exists($pc2, 'symptoms')) {
-                try { $pc2->symptoms()->sync($symptomIds2); } catch (\Exception $e) {}
-            }
-        }
-
-        if ($cheikh && $pneumo) {
-            PreConsultation::create([
-                'patient_id' => $cheikh->id,
-                'symptoms_selected' => json_encode(['Toux persistante', 'Essoufflement', 'Sifflement respiratoire']),
-                'suggested_specialty_id' => $pneumo->id,
-                'confidence_score' => 0.88,
-                'additional_notes' => 'Toux seche depuis 1 mois, aggravee la nuit',
-                'ai_recommendation' => 'Consultation pneumologique recommandee. Suspicion d asthme ou de bronchopathie chronique. Spirometrie conseillee.',
-                'status' => 'pending',
-            ]);
-        }
-
-        $this->command->info('3 pre-consultations IA creees.');
-        $this->command->info('--- Donnees de test inserees avec succes ! ---');
+        $this->command->info('Donnees de test creees avec succes!');
     }
 }

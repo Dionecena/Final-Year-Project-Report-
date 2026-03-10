@@ -21,7 +21,7 @@ const navItems: NavItem[] = [
     roles: ['patient', 'doctor', 'secretary', 'admin'],
   },
   {
-    name: 'Preconsultation',
+    name: 'Pr\u00e9consultation',
     path: '/app/preconsultation',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,27 +41,7 @@ const navItems: NavItem[] = [
     roles: ['patient', 'doctor', 'secretary'],
   },
   {
-    name: 'Espace Secretaire',
-    path: '/app/secretary/dashboard',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-    roles: ['secretary', 'admin'],
-  },
-  {
-    name: 'Validation RDV',
-    path: '/app/secretary/appointments',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    roles: ['secretary', 'admin'],
-  },
-  {
-    name: 'Medecins',
+    name: 'M\u00e9decins',
     path: '/app/doctors',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +51,17 @@ const navItems: NavItem[] = [
     roles: ['patient', 'secretary', 'admin'],
   },
   {
-    name: 'Specialites',
+    name: 'Gestion Medecins',
+    path: '/app/admin/doctors',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    roles: ['admin'],
+  },
+  {
+    name: 'Sp\u00e9cialit\u00e9s',
     path: '/app/specialties',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,20 +82,10 @@ const navItems: NavItem[] = [
   },
   {
     name: 'Utilisateurs',
-    path: '/app/admin/users',
+    path: '/app/users',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-    ),
-    roles: ['admin'],
-  },
-  {
-    name: 'Journaux d\'audit',
-    path: '/app/admin/audit-logs',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8h-16" />
       </svg>
     ),
     roles: ['admin'],
@@ -119,15 +99,6 @@ const Sidebar: React.FC = () => {
   const filteredNavItems = navItems.filter((item) =>
     user ? item.roles.includes(user.role) : false
   );
-
-  const getInitials = (name: string) => {
-    if (!name) return '?';
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return parts[0].charAt(0).toUpperCase() + parts[parts.length - 1].charAt(0).toUpperCase();
-    }
-    return parts[0].charAt(0).toUpperCase();
-  };
 
   return (
     <div className="flex flex-col w-64 bg-white border-r border-gray-200 min-h-screen">
@@ -145,7 +116,7 @@ const Sidebar: React.FC = () => {
             key={item.path}
             to={item.path}
             className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-              location.pathname === item.path || (item.path !== '/app/dashboard' && location.pathname.startsWith(item.path))
+              location.pathname.startsWith(item.path)
                 ? 'bg-primary-50 text-primary-700'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
@@ -156,28 +127,21 @@ const Sidebar: React.FC = () => {
         ))}
       </nav>
 
-      {/* User info & actions */}
+      {/* User info & logout */}
       <div className="p-4 border-t border-gray-200">
-        <Link
-          to="/app/profile"
-          className={`flex items-center mb-3 p-2 rounded-lg transition-colors ${
-            location.pathname === '/app/profile'
-              ? 'bg-primary-50'
-              : 'hover:bg-gray-50'
-          }`}
-        >
+        <div className="flex items-center mb-3">
           <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
             <span className="text-sm font-medium text-primary-700">
-              {getInitials(user?.name || '')}
+              {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
             </span>
           </div>
           <div className="ml-3">
             <p className="text-sm font-medium text-gray-700">
-              {user?.name || 'Utilisateur'}
+              {user?.firstName} {user?.lastName}
             </p>
-            <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+            <p className="text-xs text-gray-500">{user?.role}</p>
           </div>
-        </Link>
+        </div>
         <button
           onClick={logout}
           className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors"
@@ -185,7 +149,7 @@ const Sidebar: React.FC = () => {
           <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
           </svg>
-          Deconnexion
+          D\u00e9connexion
         </button>
       </div>
     </div>

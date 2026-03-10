@@ -8,18 +8,19 @@ const appointmentService = {
     return response.data.data;
   },
 
-  // Créer un rendez-vous
+  // Patient cree un RDV : specialite + motif
   async create(data: {
-    doctor_id: number;
+    specialty_id: number;
+    reason: string;
+    preferred_date?: string;
     pre_consultation_id?: number;
-    scheduled_at: string;
     notes?: string;
   }): Promise<Appointment> {
     const response = await api.post<ApiResponse<Appointment>>('/appointments', data);
     return response.data.data;
   },
 
-  // Détail d'un rendez-vous
+  // Detail d'un rendez-vous
   async getById(id: number): Promise<Appointment> {
     const response = await api.get<ApiResponse<Appointment>>(`/appointments/${id}`);
     return response.data.data;
@@ -39,7 +40,7 @@ const appointmentService = {
     await api.delete(`/appointments/${id}`);
   },
 
-  // Créneaux disponibles d'un médecin
+  // Creneaux disponibles d'un medecin (utilise par la secretaire)
   async getAvailableSlots(doctorId: number, date: string): Promise<{
     time: string;
     datetime: string;

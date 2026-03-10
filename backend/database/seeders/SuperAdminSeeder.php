@@ -9,10 +9,13 @@ use Illuminate\Support\Facades\Hash;
 class SuperAdminSeeder extends Seeder
 {
     /**
-     * Crée le super administrateur par défaut.
+     * Cree le super administrateur par defaut.
      */
     public function run(): void
     {
+        // Supprimer l'ancien compte admin@mediconsult.sn s'il existe
+        User::where('email', 'admin@mediconsult.sn')->delete();
+
         User::firstOrCreate(
             ['email' => 'admin@mediconsult.com'],
             [
@@ -24,6 +27,6 @@ class SuperAdminSeeder extends Seeder
             ]
         );
 
-        $this->command->info('✅ Super Admin créé : admin@mediconsult.com / Admin@1234!');
+        $this->command->info('Super Admin cree : admin@mediconsult.com / Admin@1234!');
     }
 }

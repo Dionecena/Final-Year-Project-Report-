@@ -101,7 +101,8 @@ export interface PreConsultation {
   ai_recommendation?: string;
   suggested_specialty?: Specialty;
   symptoms?: Symptom[];
-  user?: User;
+  patient?: User;
+  appointment?: Appointment;
   created_at: string;
 }
 
@@ -116,6 +117,7 @@ export interface Appointment {
   scheduled_at: string;
   status: AppointmentStatus;
   notes?: string;
+  cancellation_reason?: string;
   patient?: User;
   doctor?: Doctor;
   pre_consultation?: PreConsultation;

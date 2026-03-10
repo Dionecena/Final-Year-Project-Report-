@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\Doctor;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,10 +13,9 @@ use Carbon\Carbon;
 class SecretaryController extends Controller
 {
     /**
-     * Statistiques globales pour le dashboard secretaire.
-     * GET /api/secretary/stats
+     * Dashboard secretaire : statistiques globales.
      */
-    public function stats(): JsonResponse
+    public function dashboard(): JsonResponse
     {
         $today = Carbon::today();
 
@@ -36,36 +36,28 @@ class SecretaryController extends Controller
                                         ])->count(),
         ];
 
-        return response()->json([
-            'success' => true,
-            'data' => $stats,
-        ]);
+        return response()->json($stats);
     }
 
     /**
      * Liste des rendez-vous en attente de validation.
-     * GET /api/secretary/appointments
      */
     public function pendingAppointments(): JsonResponse
     {
         $appointments = Appointment::where('status', 'pending')
             ->with([
-                'user:id,name,email,phone',
+                'patient:id,name,email,phone',
                 'doctor.user:id,name,email',
                 'doctor.specialty:id,name',
             ])
             ->orderBy('scheduled_at', 'asc')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $appointments,
-        ]);
+        return response()->json($appointments);
     }
 
     /**
      * Valider un rendez-vous et eventuellement assigner un medecin.
-     * PUT /api/secretary/appointments/{appointment}/validate
      */
     public function validateAppointment(Request $request, Appointment $appointment): JsonResponse
     {
@@ -82,16 +74,19 @@ class SecretaryController extends Controller
         $appointment->status = 'confirmed';
 
         if ($request->has('doctor_id')) {
-            $appointment->doctor_id = $request->doctor_id;
+            $doctor = Doctor::find($request->doctor_id);
+            if (!$doctor) {
+                return response()->json(['message' => 'Medecin introuvable.'], 404);
+            }
+            $appointment->doctor_id = $doctor->id;
         }
 
         $appointment->save();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Rendez-vous confirme avec succes.',
-            'data' => $appointment->load([
-                'user:id,name,email',
+            'message'     => 'Rendez-vous confirme avec succes.',
+            'appointment' => $appointment->load([
+                'patient:id,name,email',
                 'doctor.user:id,name,email',
                 'doctor.specialty:id,name',
             ]),
@@ -100,7 +95,6 @@ class SecretaryController extends Controller
 
     /**
      * Rejeter un rendez-vous avec un motif obligatoire.
-     * PUT /api/secretary/appointments/{appointment}/reject
      */
     public function rejectAppointment(Request $request, Appointment $appointment): JsonResponse
     {
@@ -111,23 +105,22 @@ class SecretaryController extends Controller
         }
 
         $request->validate([
-            'rejection_reason' => 'required|string|max:500',
+            'cancellation_reason' => 'required|string|max:500',
         ]);
 
         $appointment->status = 'cancelled';
-        $appointment->notes = $request->rejection_reason;
+        $appointment->cancellation_reason = $request->cancellation_reason;
         $appointment->save();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Rendez-vous rejete.',
-            'data' => $appointment->load(['user:id,name,email']),
+            'message'     => 'Rendez-vous rejete.',
+            'appointment' => $appointment->load(['patient:id,name,email']),
         ]);
     }
 
     /**
      * Ouvrir / fermer la prise de rendez-vous en ligne.
-     * PUT /api/secretary/online-booking-status
+     * Stocke un flag dans le cache (ou config).
      */
     public function toggleOnlineBooking(Request $request): JsonResponse
     {
@@ -135,10 +128,10 @@ class SecretaryController extends Controller
             'enabled' => 'required|boolean',
         ]);
 
+        // Utilise le cache Laravel pour stocker le flag
         cache()->forever('online_booking_enabled', $request->enabled);
 
         return response()->json([
-            'success' => true,
             'message' => $request->enabled
                 ? 'La prise de rendez-vous en ligne est activee.'
                 : 'La prise de rendez-vous en ligne est desactivee.',
@@ -148,12 +141,10 @@ class SecretaryController extends Controller
 
     /**
      * Verifier si la prise de RDV en ligne est active.
-     * GET /api/secretary/online-booking-status
      */
     public function onlineBookingStatus(): JsonResponse
     {
         return response()->json([
-            'success' => true,
             'online_booking_enabled' => cache()->get('online_booking_enabled', true),
         ]);
     }

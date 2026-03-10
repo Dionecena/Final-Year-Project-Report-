@@ -39,11 +39,11 @@ import SecretaryDashboardPage from './pages/secretary/SecretaryDashboardPage';
 import AppointmentValidationPage from './pages/secretary/AppointmentValidationPage';
 import ScheduleManagementPage from './pages/secretary/ScheduleManagementPage';
 
-// Notifications
-import NotificationsPage from './pages/NotificationsPage';
-
 // Profil
 import ProfilePage from './pages/ProfilePage';
+
+// Notifications
+import NotificationsPage from './pages/NotificationsPage';
 
 // React Query client
 const queryClient = new QueryClient({

@@ -30,6 +30,10 @@ import SpecialtiesPage from './pages/admin/SpecialtiesPage';
 // Phase 3 -- Medecin
 import SchedulePage from './pages/doctor/SchedulePage';
 
+// Phase 5 -- Secretaire
+import SecretaryDashboardPage from './pages/secretary/SecretaryDashboardPage';
+import AppointmentValidationPage from './pages/secretary/AppointmentValidationPage';
+
 // React Query client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -124,6 +128,24 @@ const App: React.FC = () => {
                 element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <SpecialtiesPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Phase 5 -- Secretaire */}
+              <Route
+                path="secretary/dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['secretary', 'admin']}>
+                    <SecretaryDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="secretary/appointments"
+                element={
+                  <ProtectedRoute allowedRoles={['secretary', 'admin']}>
+                    <AppointmentValidationPage />
                   </ProtectedRoute>
                 }
               />

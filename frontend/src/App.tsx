@@ -39,13 +39,10 @@ import SecretaryDashboardPage from './pages/secretary/SecretaryDashboardPage';
 import AppointmentValidationPage from './pages/secretary/AppointmentValidationPage';
 import ScheduleManagementPage from './pages/secretary/ScheduleManagementPage';
 
-// Profil
+// Profil & Notifications
 import ProfilePage from './pages/ProfilePage';
-
-// Notifications
 import NotificationsPage from './pages/NotificationsPage';
 
-// React Query client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -80,6 +77,10 @@ const App: React.FC = () => {
             >
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
+
+              {/* Profil & Notifications */}
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
 
               {/* Phase 2 -- Core Business */}
               <Route
@@ -179,22 +180,16 @@ const App: React.FC = () => {
                 }
               />
               <Route
-                path="secretary/schedules"
+                path="secretary/schedule"
                 element={
                   <ProtectedRoute allowedRoles={['secretary', 'admin']}>
                     <ScheduleManagementPage />
                   </ProtectedRoute>
                 }
               />
-
-              {/* Notifications -- tous les roles */}
-              <Route path="notifications" element={<NotificationsPage />} />
-
-              {/* Profil */}
-              <Route path="profile" element={<ProfilePage />} />
             </Route>
 
-            {/* ====== RETROCOMPATIBILITE : anciennes URLs ====== */}
+            {/* ====== RETROCOMPATIBILITE ====== */}
             <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
             <Route path="/preconsultation" element={<Navigate to="/app/preconsultation" replace />} />
             <Route path="/appointments" element={<Navigate to="/app/appointments" replace />} />
@@ -205,7 +200,6 @@ const App: React.FC = () => {
             <Route path="/admin/users" element={<Navigate to="/app/admin/users" replace />} />
             <Route path="/admin/audit-logs" element={<Navigate to="/app/admin/audit-logs" replace />} />
             <Route path="/specialties" element={<Navigate to="/app/specialties" replace />} />
-            <Route path="/notifications" element={<Navigate to="/app/notifications" replace />} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />

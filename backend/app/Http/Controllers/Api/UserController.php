@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -16,12 +18,6 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        if (!$user->isAdmin()) {
-            return response()->json(['message' => 'Accès réservé aux administrateurs'], 403);
-        }
-
         $query = User::query();
 
         // Filtres
@@ -51,20 +47,55 @@ class UserController extends Controller
     }
 
     /**
-     * Activer/Désactiver un compte utilisateur
+     * Creer un compte utilisateur (admin uniquement).
+     * POST /api/admin/users
+     *
+     * Permet a l'admin de creer des comptes medecin, secretaire ou patient.
+     * C'est le SEUL moyen de creer un compte non-patient.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => ['required', 'confirmed', Password::min(8)],
+            'role' => 'required|in:patient,doctor,secretary,admin',
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'phone' => $validated['phone'] ?? null,
+        ]);
+
+        AuditService::log('create_user', 'User', $user->id, null, [
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'created_by' => $request->user()->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $user,
+            'message' => 'Utilisateur cree avec succes (role : ' . $user->role . ').',
+        ], 201);
+    }
+
+    /**
+     * Activer/Desactiver un compte utilisateur
      * PUT /api/admin/users/{id}/toggle-status
      */
     public function toggleStatus(Request $request, User $user): JsonResponse
     {
         $admin = $request->user();
 
-        if (!$admin->isAdmin()) {
-            return response()->json(['message' => 'Accès réservé aux administrateurs'], 403);
-        }
-
-        // Ne pas désactiver son propre compte
+        // Ne pas desactiver son propre compte
         if ($admin->id === $user->id) {
-            return response()->json(['message' => 'Vous ne pouvez pas désactiver votre propre compte'], 422);
+            return response()->json(['message' => 'Vous ne pouvez pas desactiver votre propre compte'], 422);
         }
 
         $oldStatus = $user->is_active;
@@ -81,22 +112,16 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'data' => $user,
-            'message' => $user->is_active ? 'Compte activé' : 'Compte désactivé',
+            'message' => $user->is_active ? 'Compte active' : 'Compte desactive',
         ]);
     }
 
     /**
-     * Modifier le rôle d'un utilisateur
+     * Modifier le role d'un utilisateur
      * PUT /api/admin/users/{id}/role
      */
     public function updateRole(Request $request, User $user): JsonResponse
     {
-        $admin = $request->user();
-
-        if (!$admin->isAdmin()) {
-            return response()->json(['message' => 'Accès réservé aux administrateurs'], 403);
-        }
-
         $validated = $request->validate([
             'role' => 'required|in:patient,doctor,secretary,admin',
         ]);
@@ -112,7 +137,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'data' => $user,
-            'message' => 'Rôle modifié avec succès',
+            'message' => 'Role modifie avec succes',
         ]);
     }
 }

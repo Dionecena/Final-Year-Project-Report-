@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             SecretarySeeder::class,
             SpecialtySeeder::class,
             SymptomSeeder::class,
+            TestDataSeeder::class,
         ]);
     }
 }

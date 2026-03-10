@@ -11,7 +11,8 @@ import LandingPage from './pages/LandingPage';
 // Auth
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
-import ProfilePage from './pages/ProfilePage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 
 // Dashboard
 import DashboardPage from './pages/DashboardPage';
@@ -27,13 +28,19 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AuditLogsPage from './pages/admin/AuditLogsPage';
 import UsersPage from './pages/admin/UsersPage';
 import SpecialtiesPage from './pages/admin/SpecialtiesPage';
+import DoctorsManagementPage from './pages/admin/DoctorsManagementPage';
 
 // Phase 3 -- Medecin
 import SchedulePage from './pages/doctor/SchedulePage';
+import PatientFilesPage from './pages/doctor/PatientFilesPage';
 
 // Phase 5 -- Secretaire
 import SecretaryDashboardPage from './pages/secretary/SecretaryDashboardPage';
 import AppointmentValidationPage from './pages/secretary/AppointmentValidationPage';
+import ScheduleManagementPage from './pages/secretary/ScheduleManagementPage';
+
+// Profil
+import ProfilePage from './pages/ProfilePage';
 
 // React Query client
 const queryClient = new QueryClient({
@@ -41,7 +48,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     },
   },
 });
@@ -56,6 +63,8 @@ const App: React.FC = () => {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* ====== ROUTES PROTEGEES avec layout Dashboard ====== */}
             <Route
@@ -68,6 +77,8 @@ const App: React.FC = () => {
             >
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
+
+              {/* Profil utilisateur */}
               <Route path="profile" element={<ProfilePage />} />
 
               {/* Phase 2 -- Core Business */}
@@ -96,6 +107,14 @@ const App: React.FC = () => {
                 element={
                   <ProtectedRoute allowedRoles={['doctor']}>
                     <SchedulePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="doctor/patients"
+                element={
+                  <ProtectedRoute allowedRoles={['doctor']}>
+                    <PatientFilesPage />
                   </ProtectedRoute>
                 }
               />
@@ -133,6 +152,14 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="admin/doctors"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <DoctorsManagementPage />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Phase 5 -- Secretaire */}
               <Route
@@ -151,9 +178,17 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="secretary/schedule"
+                element={
+                  <ProtectedRoute allowedRoles={['secretary', 'admin']}>
+                    <ScheduleManagementPage />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
 
-            {/* ====== RETROCOMPATIBILITE : anciennes URLs /dashboard, /preconsultation, etc. ====== */}
+            {/* ====== RETROCOMPATIBILITE : anciennes URLs ====== */}
             <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
             <Route path="/preconsultation" element={<Navigate to="/app/preconsultation" replace />} />
             <Route path="/appointments" element={<Navigate to="/app/appointments" replace />} />

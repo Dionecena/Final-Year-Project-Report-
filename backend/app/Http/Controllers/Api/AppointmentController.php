@@ -12,13 +12,12 @@ use Illuminate\Http\Request;
 class AppointmentController extends Controller
 {
     /**
-     * Lister les rendez-vous (selon le rôle)
-     * GET /api/appointments
+     * Lister les rendez-vous (selon le role)
      */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $query = Appointment::with(['patient', 'doctor.user', 'doctor.specialty', 'preConsultation']);
+        $query = Appointment::with(['patient', 'doctor.user', 'doctor.specialty', 'specialty', 'preConsultation']);
 
         if ($user->isPatient()) {
             $query->forPatient($user->id);
@@ -28,9 +27,8 @@ class AppointmentController extends Controller
                 $query->forDoctor($doctor->id);
             }
         }
-        // Admin et secrétaire voient tout
 
-        $appointments = $query->orderByDesc('scheduled_at')->get();
+        $appointments = $query->orderByDesc('created_at')->get();
 
         return response()->json([
             'success' => true,
@@ -39,70 +37,55 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Créer un rendez-vous
-     * POST /api/appointments
+     * Patient cree un RDV : specialite + motif (pas de medecin)
      */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'doctor_id' => 'required|exists:doctors,id',
+            'specialty_id' => 'required|exists:specialties,id',
+            'reason' => 'required|string|max:1000',
+            'preferred_date' => 'nullable|date|after:today',
             'pre_consultation_id' => 'nullable|exists:pre_consultations,id',
-            'scheduled_at' => 'required|date|after:now',
             'notes' => 'nullable|string|max:500',
         ]);
 
         $patient = $request->user();
 
-        // Vérifier que le créneau est disponible
-        $conflict = Appointment::where('doctor_id', $validated['doctor_id'])
-            ->where('scheduled_at', $validated['scheduled_at'])
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->exists();
-
-        if ($conflict) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ce créneau est déjà réservé. Veuillez choisir un autre horaire.',
-            ], 422);
-        }
-
         $appointment = Appointment::create([
             'patient_id' => $patient->id,
-            'doctor_id' => $validated['doctor_id'],
+            'specialty_id' => $validated['specialty_id'],
+            'reason' => $validated['reason'],
             'pre_consultation_id' => $validated['pre_consultation_id'] ?? null,
-            'scheduled_at' => $validated['scheduled_at'],
-            'status' => 'pending',
             'notes' => $validated['notes'] ?? null,
+            'status' => 'pending',
         ]);
 
-        $appointment->load(['patient', 'doctor.user', 'doctor.specialty']);
+        $appointment->load(['specialty']);
 
         AuditService::log('create', 'Appointment', $appointment->id, null, [
-            'doctor_id' => $appointment->doctor_id,
-            'scheduled_at' => $appointment->scheduled_at,
+            'specialty_id' => $appointment->specialty_id,
+            'reason' => $appointment->reason,
         ]);
 
         return response()->json([
             'success' => true,
             'data' => $appointment,
-            'message' => 'Rendez-vous créé avec succès. En attente de confirmation.',
+            'message' => 'Rendez-vous demande avec succes. La secretaire vous assignera un medecin.',
         ], 201);
     }
 
     /**
-     * Détail d'un rendez-vous
-     * GET /api/appointments/{id}
+     * Detail d'un rendez-vous
      */
     public function show(Request $request, Appointment $appointment): JsonResponse
     {
         $user = $request->user();
 
-        // Vérifier les droits d'accès
         if (!$this->canAccess($user, $appointment)) {
-            return response()->json(['message' => 'Accès non autorisé'], 403);
+            return response()->json(['message' => 'Acces non autorise'], 403);
         }
 
-        $appointment->load(['patient', 'doctor.user', 'doctor.specialty', 'preConsultation.suggestedSpecialty']);
+        $appointment->load(['patient', 'doctor.user', 'doctor.specialty', 'specialty', 'preConsultation']);
 
         AuditService::log('view', 'Appointment', $appointment->id);
 
@@ -114,7 +97,6 @@ class AppointmentController extends Controller
 
     /**
      * Modifier le statut d'un rendez-vous
-     * PUT /api/appointments/{id}
      */
     public function update(Request $request, Appointment $appointment): JsonResponse
     {
@@ -126,13 +108,12 @@ class AppointmentController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        // Règles de transition de statut
         if (isset($validated['status'])) {
             if ($validated['status'] === 'confirmed' && !$user->isSecretary() && !$user->isAdmin()) {
-                return response()->json(['message' => 'Seul le secrétaire peut confirmer un RDV'], 403);
+                return response()->json(['message' => 'Seul le secretaire peut confirmer un RDV'], 403);
             }
             if ($validated['status'] === 'cancelled' && $user->isPatient() && $user->id !== $appointment->patient_id) {
-                return response()->json(['message' => 'Accès non autorisé'], 403);
+                return response()->json(['message' => 'Acces non autorise'], 403);
             }
         }
 
@@ -144,39 +125,37 @@ class AppointmentController extends Controller
         return response()->json([
             'success' => true,
             'data' => $appointment,
-            'message' => 'Rendez-vous mis à jour avec succès',
+            'message' => 'Rendez-vous mis a jour avec succes',
         ]);
     }
 
     /**
      * Annuler un rendez-vous
-     * DELETE /api/appointments/{id}
      */
     public function destroy(Request $request, Appointment $appointment): JsonResponse
     {
         $user = $request->user();
 
         if (!$this->canAccess($user, $appointment)) {
-            return response()->json(['message' => 'Accès non autorisé'], 403);
+            return response()->json(['message' => 'Acces non autorise'], 403);
         }
 
         $oldValues = $appointment->toArray();
         $appointment->update([
             'status' => 'cancelled',
-            'cancellation_reason' => 'Annulé par ' . $user->role,
+            'cancellation_reason' => 'Annule par ' . $user->role,
         ]);
 
         AuditService::log('cancel', 'Appointment', $appointment->id, $oldValues);
 
         return response()->json([
             'success' => true,
-            'message' => 'Rendez-vous annulé avec succès',
+            'message' => 'Rendez-vous annule avec succes',
         ]);
     }
 
     /**
-     * Créneaux disponibles d'un médecin pour une date donnée
-     * GET /api/doctors/{doctor}/slots?date=2025-03-15
+     * Creneaux disponibles d'un medecin pour une date donnee
      */
     public function availableSlots(Request $request, Doctor $doctor): JsonResponse
     {
@@ -185,9 +164,8 @@ class AppointmentController extends Controller
         ]);
 
         $date = \Carbon\Carbon::parse($validated['date']);
-        $dayOfWeek = $date->dayOfWeek; // 0=Dimanche, 1=Lundi, ...
+        $dayOfWeek = $date->dayOfWeek;
 
-        // Récupérer le planning du médecin pour ce jour
         $schedule = $doctor->schedules()
             ->where('day_of_week', $dayOfWeek)
             ->where('is_available', true)
@@ -197,11 +175,10 @@ class AppointmentController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [],
-                'message' => 'Le médecin n\'est pas disponible ce jour',
+                'message' => 'Le medecin n\'est pas disponible ce jour',
             ]);
         }
 
-        // Générer les créneaux de 30 minutes
         $slots = [];
         $start = \Carbon\Carbon::parse($validated['date'] . ' ' . $schedule->start_time);
         $end = \Carbon\Carbon::parse($validated['date'] . ' ' . $schedule->end_time);
@@ -209,7 +186,6 @@ class AppointmentController extends Controller
         while ($start->lt($end)) {
             $slotTime = $start->copy();
 
-            // Vérifier si le créneau est déjà pris
             $isTaken = Appointment::where('doctor_id', $doctor->id)
                 ->where('scheduled_at', $slotTime)
                 ->whereIn('status', ['pending', 'confirmed'])

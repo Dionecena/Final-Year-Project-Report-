@@ -21,7 +21,17 @@ const navItems: NavItem[] = [
     roles: ['patient', 'doctor', 'secretary', 'admin'],
   },
   {
-    name: 'Pr\u00e9consultation',
+    name: 'Notifications',
+    path: '/app/notifications',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+    ),
+    roles: ['patient', 'doctor', 'secretary', 'admin'],
+  },
+  {
+    name: 'Preconsultation',
     path: '/app/preconsultation',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +51,7 @@ const navItems: NavItem[] = [
     roles: ['patient', 'doctor', 'secretary'],
   },
   {
-    name: 'M\u00e9decins',
+    name: 'Medecins',
     path: '/app/doctors',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,16 +59,6 @@ const navItems: NavItem[] = [
       </svg>
     ),
     roles: ['patient', 'secretary', 'admin'],
-  },
-  {
-    name: 'Notifications',
-    path: '/app/notifications',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-      </svg>
-    ),
-    roles: ['patient', 'doctor', 'secretary', 'admin'],
   },
   {
     name: 'Fiches Patients',
@@ -71,16 +71,6 @@ const navItems: NavItem[] = [
     roles: ['doctor'],
   },
   {
-    name: 'Sp\u00e9cialit\u00e9s',
-    path: '/app/specialties',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-      </svg>
-    ),
-    roles: ['admin'],
-  },
-  {
     name: 'Planning',
     path: '/app/schedule',
     icon: (
@@ -88,17 +78,17 @@ const navItems: NavItem[] = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
-    roles: ['doctor', 'secretary'],
+    roles: ['doctor'],
   },
   {
-    name: 'Espace Secr\u00e9taire',
+    name: 'Espace Secretaire',
     path: '/app/secretary/dashboard',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
       </svg>
     ),
-    roles: ['secretary', 'admin'],
+    roles: ['secretary'],
   },
   {
     name: 'Validation RDV',
@@ -111,14 +101,34 @@ const navItems: NavItem[] = [
     roles: ['secretary', 'admin'],
   },
   {
-    name: 'Gestion Plannings',
-    path: '/app/secretary/schedules',
+    name: 'Gestion Planning',
+    path: '/app/secretary/schedule',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
     roles: ['secretary', 'admin'],
+  },
+  {
+    name: 'Gestion Medecins',
+    path: '/app/admin/doctors',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    roles: ['admin'],
+  },
+  {
+    name: 'Specialites',
+    path: '/app/specialties',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+      </svg>
+    ),
+    roles: ['admin'],
   },
   {
     name: 'Utilisateurs',
@@ -131,21 +141,11 @@ const navItems: NavItem[] = [
     roles: ['admin'],
   },
   {
-    name: 'Journaux d\'audit',
+    name: "Journaux d'audit",
     path: '/app/admin/audit-logs',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-    roles: ['admin'],
-  },
-  {
-    name: 'Gestion M\u00e9decins',
-    path: '/app/admin/doctors',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
       </svg>
     ),
     roles: ['admin'],
@@ -164,9 +164,7 @@ const Sidebar: React.FC = () => {
     <div className="flex flex-col w-64 bg-white border-r border-gray-200 min-h-screen">
       {/* Logo */}
       <div className="flex items-center justify-center h-16 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-primary-600">
-          MediConsult
-        </h1>
+        <h1 className="text-xl font-bold text-primary-600">MediConsult</h1>
       </div>
 
       {/* Navigation */}
@@ -176,7 +174,7 @@ const Sidebar: React.FC = () => {
             key={item.path}
             to={item.path}
             className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-              location.pathname.startsWith(item.path)
+              location.pathname === item.path || location.pathname.startsWith(item.path + '/')
                 ? 'bg-primary-50 text-primary-700'
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
             }`}
@@ -189,19 +187,19 @@ const Sidebar: React.FC = () => {
 
       {/* User info & logout */}
       <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center mb-3">
+        <Link to="/app/profile" className="flex items-center mb-3 hover:bg-gray-50 rounded-lg p-1 transition-colors">
           <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
             <span className="text-sm font-medium text-primary-700">
-              {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+              {user?.name?.charAt(0) || '?'}
             </span>
           </div>
           <div className="ml-3">
             <p className="text-sm font-medium text-gray-700">
-              {user?.firstName} {user?.lastName}
+              {user?.name || 'Utilisateur'}
             </p>
             <p className="text-xs text-gray-500">{user?.role}</p>
           </div>
-        </div>
+        </Link>
         <button
           onClick={logout}
           className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors"
@@ -209,7 +207,7 @@ const Sidebar: React.FC = () => {
           <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
           </svg>
-          D\u00e9connexion
+          Deconnexion
         </button>
       </div>
     </div>

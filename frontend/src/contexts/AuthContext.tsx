@@ -22,33 +22,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       if (authService.isAuthenticated()) {
         const profile = await authService.getProfile();
-        setUser(profile);
-        localStorage.setItem('user', JSON.stringify(profile));
+        setUser(profile as User);
       }
     } catch {
       setUser(null);
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
+      await authService.logout();
     }
   }, []);
 
   useEffect(() => {
-    // Charger l'utilisateur depuis le localStorage au démarrage
+    // Initialiser le header Authorization au demarrage
+    authService.initAuth();
+
+    // Charger l'utilisateur depuis le localStorage
     const savedUser = authService.getCurrentUser();
     if (savedUser) {
-      setUser(savedUser);
+      setUser(savedUser as User);
     }
     setIsLoading(false);
   }, []);
 
   const login = async (data: LoginRequest) => {
     const response = await authService.login(data);
-    setUser(response.user);
+    setUser(response.user as User);
   };
 
   const register = async (data: RegisterRequest) => {
     const response = await authService.register(data);
-    setUser(response.user);
+    setUser(response.user as User);
   };
 
   const logout = async () => {
@@ -76,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth doit être utilisé dans un AuthProvider');
+    throw new Error('useAuth doit etre utilise dans un AuthProvider');
   }
   return context;
 };

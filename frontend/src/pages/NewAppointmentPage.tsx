@@ -1,41 +1,41 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import doctorService from '../services/doctorService';
 import appointmentService from '../services/appointmentService';
-import { Doctor } from '../types';
+import api from '../services/api';
+
+interface Specialty {
+  id: number;
+  name: string;
+  description?: string;
+}
 
 const NewAppointmentPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as { preConsultationId?: number; specialtyId?: number } | null;
 
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedSlot, setSelectedSlot] = useState('');
+  const [selectedSpecialtyId, setSelectedSpecialtyId] = useState<number | null>(state?.specialtyId || null);
+  const [reason, setReason] = useState('');
+  const [preferredDate, setPreferredDate] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Charger les médecins (filtrés par spécialité si préconsultation)
-  const { data: doctors = [], isLoading: loadingDoctors } = useQuery({
-    queryKey: ['doctors', state?.specialtyId],
-    queryFn: () => state?.specialtyId
-      ? doctorService.getBySpecialty(state.specialtyId)
-      : doctorService.getAll(),
-  });
-
-  // Charger les créneaux disponibles
-  const { data: slots = [], isLoading: loadingSlots } = useQuery({
-    queryKey: ['slots', selectedDoctor?.id, selectedDate],
-    queryFn: () => appointmentService.getAvailableSlots(selectedDoctor!.id, selectedDate),
-    enabled: !!selectedDoctor && !!selectedDate,
+  // Charger les specialites
+  const { data: specialties = [], isLoading: loadingSpecialties } = useQuery({
+    queryKey: ['specialties'],
+    queryFn: async () => {
+      const res = await api.get('/specialties');
+      return res.data.data || res.data;
+    },
   });
 
   const createMutation = useMutation({
     mutationFn: () => appointmentService.create({
-      doctor_id: selectedDoctor!.id,
+      specialty_id: selectedSpecialtyId!,
+      reason,
+      preferred_date: preferredDate || undefined,
       pre_consultation_id: state?.preConsultationId,
-      scheduled_at: selectedSlot,
       notes: notes || undefined,
     }),
     onSuccess: () => {
@@ -52,10 +52,13 @@ const NewAppointmentPage: React.FC = () => {
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Prendre un rendez-vous</h1>
+        <p className="text-gray-500 mt-1">
+          Choisissez une specialite et decrivez votre motif. La secretaire vous assignera un medecin disponible.
+        </p>
         {state?.preConsultationId && (
           <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-700">
-              ✅ Préconsultation enregistrée — Les médecins affichés correspondent à votre spécialité suggérée
+              Preconsultation enregistree -- La specialite suggeree a ete pre-selectionnee
             </p>
           </div>
         )}
@@ -68,132 +71,99 @@ const NewAppointmentPage: React.FC = () => {
       )}
 
       <div className="space-y-6">
-        {/* Étape 1 : Choisir un médecin */}
-        <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">1. Choisir un médecin</h2>
+        {/* Etape 1 : Choisir une specialite */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">1. Choisir une specialite</h2>
 
-          {loadingDoctors ? (
+          {loadingSpecialties ? (
             <div className="flex justify-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
             </div>
-          ) : doctors.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">Aucun médecin disponible</p>
+          ) : specialties.length === 0 ? (
+            <p className="text-gray-500 text-center py-4">Aucune specialite disponible</p>
           ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {doctors.map((doctor: Doctor) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {specialties.map((spec: Specialty) => (
                 <button
-                  key={doctor.id}
-                  onClick={() => {
-                    setSelectedDoctor(doctor);
-                    setSelectedSlot('');
-                  }}
+                  key={spec.id}
+                  onClick={() => setSelectedSpecialtyId(spec.id)}
                   className={`p-4 rounded-lg border-2 text-left transition-all ${
-                    selectedDoctor?.id === doctor.id
+                    selectedSpecialtyId === spec.id
                       ? 'border-primary-500 bg-primary-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-primary-600 font-semibold">
-                        {doctor.user?.name?.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Dr. {doctor.user?.name}</p>
-                      <p className="text-sm text-primary-600">{doctor.specialty?.name}</p>
-                      {doctor.bio && (
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{doctor.bio}</p>
-                      )}
-                    </div>
-                  </div>
+                  <p className="font-medium text-gray-900 text-sm">{spec.name}</p>
+                  {spec.description && (
+                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{spec.description}</p>
+                  )}
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Étape 2 : Choisir une date */}
-        {selectedDoctor && (
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">2. Choisir une date</h2>
+        {/* Etape 2 : Motif de consultation */}
+        {selectedSpecialtyId && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">2. Motif de consultation</h2>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="Decrivez brievement la raison de votre consultation..."
+              maxLength={1000}
+            />
+            <p className="text-xs text-gray-400 mt-1">{reason.length}/1000 caracteres</p>
+          </div>
+        )}
+
+        {/* Etape 3 : Date souhaitee (optionnel) */}
+        {selectedSpecialtyId && reason.trim() && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">3. Date souhaitee (optionnel)</h2>
+            <p className="text-sm text-gray-500 mb-3">
+              Indiquez une date preferee. La secretaire confirmera la date exacte selon les disponibilites.
+            </p>
             <input
               type="date"
-              value={selectedDate}
-              onChange={(e) => {
-                setSelectedDate(e.target.value);
-                setSelectedSlot('');
-              }}
+              value={preferredDate}
+              onChange={(e) => setPreferredDate(e.target.value)}
               min={today}
-              className="input-field"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
         )}
 
-        {/* Étape 3 : Choisir un créneau */}
-        {selectedDoctor && selectedDate && (
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">3. Choisir un créneau</h2>
-
-            {loadingSlots ? (
-              <div className="flex justify-center py-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-              </div>
-            ) : slots.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">
-                Aucun créneau disponible pour cette date. Essayez une autre date.
-              </p>
-            ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {slots.map((slot) => (
-                  <button
-                    key={slot.datetime}
-                    onClick={() => slot.available && setSelectedSlot(slot.datetime)}
-                    disabled={!slot.available}
-                    className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                      !slot.available
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed line-through'
-                        : selectedSlot === slot.datetime
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-50 text-gray-700 hover:bg-primary-50 hover:text-primary-700 border border-gray-200'
-                    }`}
-                  >
-                    {slot.time}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Notes optionnelles */}
-        {selectedSlot && (
-          <div className="card">
+        {/* Etape 4 : Notes optionnelles */}
+        {selectedSpecialtyId && reason.trim() && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">4. Notes (optionnel)</h2>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="input-field"
-              placeholder="Informations supplémentaires pour le médecin..."
+              rows={2}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="Informations supplementaires..."
             />
           </div>
         )}
 
-        {/* Bouton de confirmation */}
+        {/* Boutons */}
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="btn-secondary"
+            className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
           >
-            ← Retour
+            Retour
           </button>
           <button
             onClick={() => createMutation.mutate()}
-            disabled={!selectedDoctor || !selectedSlot || createMutation.isPending}
-            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!selectedSpecialtyId || !reason.trim() || createMutation.isPending}
+            className="px-6 py-2 text-sm text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {createMutation.isPending ? 'Réservation...' : 'Confirmer le rendez-vous'}
+            {createMutation.isPending ? 'Envoi...' : 'Demander le rendez-vous'}
           </button>
         </div>
       </div>

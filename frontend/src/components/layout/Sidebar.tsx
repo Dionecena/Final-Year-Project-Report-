@@ -21,7 +21,7 @@ const navItems: NavItem[] = [
     roles: ['patient', 'doctor', 'secretary', 'admin'],
   },
   {
-    name: 'Pr\u00e9consultation',
+    name: 'Preconsultation',
     path: '/app/preconsultation',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +41,27 @@ const navItems: NavItem[] = [
     roles: ['patient', 'doctor', 'secretary'],
   },
   {
-    name: 'M\u00e9decins',
+    name: 'Espace Secretaire',
+    path: '/app/secretary/dashboard',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+    roles: ['secretary', 'admin'],
+  },
+  {
+    name: 'Validation RDV',
+    path: '/app/secretary/appointments',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    roles: ['secretary', 'admin'],
+  },
+  {
+    name: 'Medecins',
     path: '/app/doctors',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +71,7 @@ const navItems: NavItem[] = [
     roles: ['patient', 'secretary', 'admin'],
   },
   {
-    name: 'Sp\u00e9cialit\u00e9s',
+    name: 'Specialites',
     path: '/app/specialties',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,85 +113,65 @@ const navItems: NavItem[] = [
 ];
 
 const Sidebar: React.FC = () => {
-  const { user, logout } = useAuth();
   const location = useLocation();
+  const { user, logout } = useAuth();
 
-  const filteredNavItems = navItems.filter(
-    (item) => user && item.roles.includes(user.role)
+  const filteredNavItems = navItems.filter((item) =>
+    user ? item.roles.includes(user.role) : false
   );
 
-  const getRoleBadge = (role: string) => {
-    const badges: Record<string, { label: string; color: string }> = {
-      patient: { label: 'Patient', color: 'bg-green-100 text-green-800' },
-      doctor: { label: 'M\u00e9decin', color: 'bg-blue-100 text-blue-800' },
-      secretary: { label: 'Secr\u00e9taire', color: 'bg-yellow-100 text-yellow-800' },
-      admin: { label: 'Admin', color: 'bg-red-100 text-red-800' },
-    };
-    return badges[role] || { label: role, color: 'bg-gray-100 text-gray-800' };
-  };
-
-  return (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200 w-64">
+  return (
+    <div className="flex flex-col w-64 bg-white border-r border-gray-200 min-h-screen">
       {/* Logo */}
-      <div className="flex items-center px-6 py-5 border-b border-gray-200">
-        <div className="flex items-center justify-center w-10 h-10 bg-primary-600 rounded-lg">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        </div>
-        <span className="ml-3 text-xl font-bold text-gray-900">MediConsult</span>
+      <div className="flex items-center justify-center h-16 border-b border-gray-200">
+        <h1 className="text-xl font-bold text-primary-600">
+          MediConsult
+        </h1>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-        {filteredNavItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              <span className={isActive ? 'text-primary-600' : 'text-gray-400'}>
-                {item.icon}
-              </span>
-              <span className="ml-3">{item.name}</span>
-            </Link>
-          );
-        })}
+      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+        {filteredNavItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+              location.pathname.startsWith(item.path)
+                ? 'bg-primary-50 text-primary-700'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            }`}
+          >
+            <span className="mr-3">{item.icon}</span>
+            {item.name}
+          </Link>
+        ))}
       </nav>
 
-      {/* Profil utilisateur */}
-      {user && (
-        <div className="px-4 py-4 border-t border-gray-200">
-          <div className="flex items-center mb-3">
-            <div className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full">
-              <span className="text-sm font-medium text-gray-600">
-                {user.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="ml-3 flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getRoleBadge(user.role).color}`}>
-                {getRoleBadge(user.role).label}
-              </span>
-            </div>
+      {/* User info & logout */}
+      <div className="p-4 border-t border-gray-200">
+        <div className="flex items-center mb-3">
+          <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+            <span className="text-sm font-medium text-primary-700">
+              {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+            </span>
           </div>
-          <button
-            onClick={logout}
-            className="w-full flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            D\u00e9connexion
-          </button>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-700">
+              {user?.firstName} {user?.lastName}
+            </p>
+            <p className="text-xs text-gray-500">{user?.role}</p>
+          </div>
         </div>
-      )}
+        <button
+          onClick={logout}
+          className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors"
+        >
+          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
+          </svg>
+          D\u00e9connexion
+        </button>
+      </div>
     </div>
   );
 };

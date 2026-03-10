@@ -142,7 +142,9 @@ class SecretaryController extends Controller
     }
 
     /**
-     * Valider un rendez-vous (confirmer sans changer de medecin).
+     * Valider un rendez-vous (confirmer, avec possibilite de changer medecin/date).
+     *
+     * SECURITE : memes verifications que assignDoctor (specialite + conflit creneau).
      */
     public function validateAppointment(Request $request, Appointment $appointment): JsonResponse
     {
@@ -152,21 +154,54 @@ class SecretaryController extends Controller
             ], 422);
         }
 
-        $request->validate([
-            'doctor_id' => 'sometimes|exists:doctors,id',
-            'scheduled_at' => 'sometimes|date|after:now',
+        $validated = $request->validate([
+            'doctor_id' => 'sometimes|required|exists:doctors,id',
+            'scheduled_at' => 'sometimes|required|date|after:now',
         ]);
 
-        $appointment->status = 'confirmed';
+        $doctorId = $validated['doctor_id'] ?? $appointment->doctor_id;
+        $scheduledAt = $validated['scheduled_at'] ?? $appointment->scheduled_at;
 
-        if ($request->has('doctor_id')) {
-            $appointment->doctor_id = $request->doctor_id;
-        }
-        if ($request->has('scheduled_at')) {
-            $appointment->scheduled_at = $request->scheduled_at;
+        // On ne peut pas confirmer sans medecin ni date
+        if (!$doctorId) {
+            return response()->json([
+                'message' => 'Un medecin doit etre assigne avant de confirmer le rendez-vous.',
+            ], 422);
         }
 
-        $appointment->save();
+        if (!$scheduledAt) {
+            return response()->json([
+                'message' => 'Une date doit etre definie avant de confirmer le rendez-vous.',
+            ], 422);
+        }
+
+        $doctor = Doctor::with('specialty')->findOrFail($doctorId);
+
+        // Verifier que le medecin est de la bonne specialite
+        if ($appointment->specialty_id && $doctor->specialty_id !== $appointment->specialty_id) {
+            return response()->json([
+                'message' => 'Ce medecin n\'est pas de la specialite demandee.',
+            ], 422);
+        }
+
+        // Verifier que le creneau n'est pas deja pris
+        $conflict = Appointment::where('doctor_id', $doctor->id)
+            ->where('scheduled_at', $scheduledAt)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where('id', '!=', $appointment->id)
+            ->exists();
+
+        if ($conflict) {
+            return response()->json([
+                'message' => 'Ce creneau est deja reserve pour ce medecin.',
+            ], 422);
+        }
+
+        $appointment->update([
+            'doctor_id' => $doctor->id,
+            'scheduled_at' => $scheduledAt,
+            'status' => 'confirmed',
+        ]);
 
         return response()->json([
             'message'     => 'Rendez-vous confirme avec succes.',

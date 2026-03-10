@@ -104,6 +104,34 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/doctor/dashboard', [DashboardController::class, 'doctorStats']);
 
     // ============================================
+    // Phase 3 -- Medecin : fiches pre-consultation
+    // ============================================
+    Route::get('/doctor/pre-consultations', [DoctorController::class, 'preConsultations']);
+
+    // ============================================
+    // Phase 3 -- Secretaire
+    // ============================================
+    Route::prefix('secretary')->group(function () {
+        Route::get('/dashboard', [SecretaryController::class, 'dashboard']);
+        Route::get('/pending-appointments', [SecretaryController::class, 'pendingAppointments']);
+        Route::put('/appointments/{appointment}/validate', [SecretaryController::class, 'validateAppointment']);
+        Route::put('/appointments/{appointment}/reject', [SecretaryController::class, 'rejectAppointment']);
+        Route::put('/online-booking/toggle', [SecretaryController::class, 'toggleOnlineBooking']);
+        Route::get('/online-booking/status', [SecretaryController::class, 'onlineBookingStatus']);
+    });
+
+    // ============================================
+    // Phase 3 -- Notifications
+    // ============================================
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::put('/{notification}/read', [NotificationController::class, 'markAsRead']);
+        Route::put('/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::delete('/{notification}', [NotificationController::class, 'destroy']);
+    });
+
+    // ============================================
     // Phase 3 -- Audit & Securite (admin)
     // ============================================
     Route::get('/admin/audit-logs', [AuditLogController::class, 'index']);
@@ -115,32 +143,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/users', [UserController::class, 'index']);
     Route::put('/admin/users/{user}/toggle-status', [UserController::class, 'toggleStatus']);
     Route::put('/admin/users/{user}/role', [UserController::class, 'updateRole']);
-
-    // ============================================
-    // Phase 5 -- Secretaire
-    // ============================================
-    Route::prefix('secretary')->group(function () {
-        Route::get('/appointments', [SecretaryController::class, 'pendingAppointments']);
-        Route::put('/appointments/{appointment}/validate', [SecretaryController::class, 'validateAppointment']);
-        Route::put('/appointments/{appointment}/reject', [SecretaryController::class, 'rejectAppointment']);
-        Route::get('/stats', [SecretaryController::class, 'stats']);
-        Route::get('/online-booking-status', [SecretaryController::class, 'onlineBookingStatus']);
-        Route::put('/online-booking-status', [SecretaryController::class, 'toggleOnlineBooking']);
-    });
-
-    // ============================================
-    // Phase 6 -- Fiches pre-consultation medecin
-    // ============================================
-    Route::get('/doctor/pre-consultations', [DoctorController::class, 'preConsultations']);
-
-    // ============================================
-    // Phase 7 -- Notifications
-    // ============================================
-    Route::prefix('notifications')->group(function () {
-        Route::get('/', [NotificationController::class, 'index']);
-        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
-        Route::put('/{notification}/read', [NotificationController::class, 'markAsRead']);
-        Route::put('/read-all', [NotificationController::class, 'markAllAsRead']);
-        Route::delete('/{notification}', [NotificationController::class, 'destroy']);
-    });
 });

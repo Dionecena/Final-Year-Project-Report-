@@ -114,6 +114,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('secretary')->group(function () {
         Route::get('/dashboard', [SecretaryController::class, 'dashboard']);
         Route::get('/pending-appointments', [SecretaryController::class, 'pendingAppointments']);
+        Route::get('/doctors-by-specialty/{specialtyId}', [SecretaryController::class, 'doctorsBySpecialty']);
+        Route::put('/appointments/{appointment}/assign', [SecretaryController::class, 'assignDoctor']);
         Route::put('/appointments/{appointment}/validate', [SecretaryController::class, 'validateAppointment']);
         Route::put('/appointments/{appointment}/reject', [SecretaryController::class, 'rejectAppointment']);
         Route::put('/online-booking/toggle', [SecretaryController::class, 'toggleOnlineBooking']);

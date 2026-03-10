@@ -1,8 +1,8 @@
 // ============================================
-// Types principaux de la plateforme médicale
+// Types principaux de la plateforme medicale
 // ============================================
 
-// Rôles utilisateur
+// Roles utilisateur
 export type UserRole = 'patient' | 'doctor' | 'secretary' | 'admin';
 
 // Statut de rendez-vous
@@ -42,7 +42,7 @@ export interface AuthResponse {
 }
 
 // ============================================
-// Spécialité médicale
+// Specialite medicale
 // ============================================
 export interface Specialty {
   id: number;
@@ -54,7 +54,7 @@ export interface Specialty {
 }
 
 // ============================================
-// Médecin
+// Medecin
 // ============================================
 export interface Doctor {
   id: number;
@@ -70,7 +70,7 @@ export interface Doctor {
 }
 
 // ============================================
-// Symptôme
+// Symptome
 // ============================================
 export interface Symptom {
   id: number;
@@ -80,24 +80,28 @@ export interface Symptom {
 }
 
 // ============================================
-// Lien Symptôme-Spécialité (avec poids)
+// Lien Symptome-Specialite (avec poids)
 // ============================================
 export interface SymptomSpecialty {
   symptom_id: number;
   specialty_id: number;
-  weight: number; // 0.0 à 1.0
+  weight: number; // 0.0 a 1.0
 }
 
 // ============================================
-// Préconsultation
+// Preconsultation
 // ============================================
 export interface PreConsultation {
   id: number;
   patient_id: number;
-  symptoms_selected: number[]; // IDs des symptômes
+  symptoms_selected: number[]; // IDs des symptomes
   suggested_specialty_id?: number;
   confidence_score?: number;
+  additional_notes?: string;
+  ai_recommendation?: string;
   suggested_specialty?: Specialty;
+  symptoms?: Symptom[];
+  user?: User;
   created_at: string;
 }
 
@@ -120,7 +124,7 @@ export interface Appointment {
 }
 
 // ============================================
-// Planning médecin
+// Planning medecin
 // ============================================
 export interface Schedule {
   id: number;
@@ -140,7 +144,8 @@ export interface Notification {
   type: string;
   title: string;
   message: string;
-  is_read: boolean;
+  data?: Record<string, unknown>;
+  read_at: string | null;
   created_at: string;
 }
 
@@ -162,12 +167,12 @@ export interface AuditLog {
 }
 
 // ============================================
-// Suggestion de spécialité (résultat algorithme)
+// Suggestion de specialite (resultat algorithme)
 // ============================================
 export interface SpecialtySuggestion {
   specialty: Specialty;
-  score: number; // 0.0 à 1.0
-  percentage: number; // 0 à 100
+  score: number; // 0.0 a 1.0
+  percentage: number; // 0 a 100
 }
 
 // ============================================
@@ -188,7 +193,7 @@ export interface DashboardStats {
 }
 
 // ============================================
-// Réponse API paginée
+// Reponse API paginee
 // ============================================
 export interface PaginatedResponse<T> {
   data: T[];
@@ -199,7 +204,7 @@ export interface PaginatedResponse<T> {
 }
 
 // ============================================
-// Réponse API générique
+// Reponse API generique
 // ============================================
 export interface ApiResponse<T> {
   success: boolean;

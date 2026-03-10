@@ -25,6 +25,15 @@ export interface ResetPasswordData {
   password_confirmation: string;
 }
 
+export interface UpdateProfileData {
+  name?: string;
+  email?: string;
+  phone?: string;
+  current_password?: string;
+  new_password?: string;
+  new_password_confirmation?: string;
+}
+
 const authService = {
   login: (data: LoginData) => api.post('/auth/login', data),
   register: (data: RegisterData) => api.post('/auth/register', data),
@@ -32,6 +41,7 @@ const authService = {
   getProfile: () => api.get('/auth/profile'),
   forgotPassword: (data: ForgotPasswordData) => api.post('/auth/forgot-password', data),
   resetPassword: (data: ResetPasswordData) => api.post('/auth/reset-password', data),
+  updateProfile: (data: UpdateProfileData) => api.put('/auth/profile', data),
 };
 
 export default authService;

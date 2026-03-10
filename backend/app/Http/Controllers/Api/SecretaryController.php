@@ -5,14 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\User;
+use App\Mail\AppointmentConfirmed;
+use App\Mail\AppointmentRejected;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class SecretaryController extends Controller
 {
     /**
-     * Dashboard secrétaire : statistiques globales.
+     * Dashboard secretaire : statistiques globales.
      */
     public function dashboard(): JsonResponse
     {
@@ -53,13 +56,14 @@ class SecretaryController extends Controller
     }
 
     /**
-     * Valider un rendez-vous et éventuellement assigner un médecin.
+     * Valider un rendez-vous et eventuellement assigner un medecin.
+     * Envoie un email de confirmation au patient.
      */
     public function validateAppointment(Request $request, Appointment $appointment): JsonResponse
     {
         if ($appointment->status !== 'pending') {
             return response()->json([
-                'message' => 'Ce rendez-vous ne peut plus être validé (statut actuel : ' . $appointment->status . ').'
+                'message' => 'Ce rendez-vous ne peut plus etre valide (statut actuel : ' . $appointment->status . ').'
             ], 422);
         }
 
@@ -72,27 +76,42 @@ class SecretaryController extends Controller
         if ($request->has('doctor_id')) {
             $doctor = User::where('id', $request->doctor_id)->where('role', 'doctor')->first();
             if (!$doctor) {
-                return response()->json(['message' => 'Médecin introuvable.'], 404);
+                return response()->json(['message' => 'Medecin introuvable.'], 404);
             }
             $appointment->doctor_id = $doctor->id;
         }
 
         $appointment->save();
 
+        // Charger les relations pour l'email
+        $appointment->load(['patient', 'doctor', 'specialty']);
+
+        // Envoyer l'email de confirmation au patient
+        try {
+            if ($appointment->patient && $appointment->patient->email) {
+                Mail::to($appointment->patient->email)
+                    ->send(new AppointmentConfirmed($appointment));
+            }
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne pas bloquer la validation
+            \Log::warning('Email de confirmation non envoye: ' . $e->getMessage());
+        }
+
         return response()->json([
-            'message'     => 'Rendez-vous confirmé avec succès.',
+            'message'     => 'Rendez-vous confirme avec succes.',
             'appointment' => $appointment->load(['patient:id,name,email', 'doctor:id,name,email', 'specialty:id,name']),
         ]);
     }
 
     /**
      * Rejeter un rendez-vous avec un motif obligatoire.
+     * Envoie un email de notification au patient avec le motif.
      */
     public function rejectAppointment(Request $request, Appointment $appointment): JsonResponse
     {
         if ($appointment->status !== 'pending') {
             return response()->json([
-                'message' => 'Ce rendez-vous ne peut plus être rejeté (statut actuel : ' . $appointment->status . ').'
+                'message' => 'Ce rendez-vous ne peut plus etre rejete (statut actuel : ' . $appointment->status . ').'
             ], 422);
         }
 
@@ -104,15 +123,27 @@ class SecretaryController extends Controller
         $appointment->notes = $request->rejection_reason;
         $appointment->save();
 
+        // Charger les relations pour l'email
+        $appointment->load(['patient', 'doctor', 'specialty']);
+
+        // Envoyer l'email de rejet au patient
+        try {
+            if ($appointment->patient && $appointment->patient->email) {
+                Mail::to($appointment->patient->email)
+                    ->send(new AppointmentRejected($appointment, $request->rejection_reason));
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Email de rejet non envoye: ' . $e->getMessage());
+        }
+
         return response()->json([
-            'message'     => 'Rendez-vous rejeté.',
+            'message'     => 'Rendez-vous rejete.',
             'appointment' => $appointment->load(['patient:id,name,email']),
         ]);
     }
 
     /**
      * Ouvrir / fermer la prise de rendez-vous en ligne.
-     * Stocke un flag dans le cache (ou config).
      */
     public function toggleOnlineBooking(Request $request): JsonResponse
     {
@@ -120,21 +151,20 @@ class SecretaryController extends Controller
             'enabled' => 'required|boolean',
         ]);
 
-        // Utilise le cache Laravel pour stocker le flag
         cache()->forever('online_booking_enabled', $request->enabled);
 
         return response()->json([
             'message' => $request->enabled
-                ? 'La prise de rendez-vous en ligne est activée.'
-                : 'La prise de rendez-vous en ligne est désactivée.',
+                ? 'La prise de rendez-vous en ligne est activee.'
+                : 'La prise de rendez-vous en ligne est desactivee.',
             'online_booking_enabled' => $request->enabled,
         ]);
     }
 
     /**
-     * Vérifier si la prise de RDV en ligne est active.
+     * Verifier si la prise de RDV en ligne est active.
      */
-    public function onlineBookingStatus(): JsonResponse
+    public function getOnlineBookingStatus(): JsonResponse
     {
         return response()->json([
             'online_booking_enabled' => cache()->get('online_booking_enabled', true),

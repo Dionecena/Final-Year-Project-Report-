@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const loginSchema = z.object({
   email: z.string().email('Adresse email invalide'),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
+  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caracteres'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -31,14 +31,14 @@ const LoginPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await login(data);
-      navigate('/dashboard');
+      navigate('/app/dashboard');
     } catch (err: any) {
       if (err.response?.status === 401) {
         setError('Email ou mot de passe incorrect');
       } else if (err.response?.status === 429) {
-        setError('Trop de tentatives. Veuillez réessayer dans quelques minutes.');
+        setError('Trop de tentatives. Veuillez reessayer dans quelques minutes.');
       } else {
-        setError('Une erreur est survenue. Veuillez réessayer.');
+        setError('Une erreur est survenue. Veuillez reessayer.');
       }
     } finally {
       setIsSubmitting(false);
@@ -56,7 +56,7 @@ const LoginPage: React.FC = () => {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-gray-900">MediConsult</h1>
-          <p className="text-gray-600 mt-2">Plateforme de préconsultation médicale</p>
+          <p className="text-gray-600 mt-2">Plateforme de preconsultation medicale</p>
         </div>
 
         {/* Formulaire */}
@@ -87,15 +87,23 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Mot de passe
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Mot de passe
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                >
+                  Mot de passe oublie ?
+                </Link>
+              </div>
               <input
                 id="password"
                 type="password"
                 {...register('password')}
                 className="input-field"
-                placeholder="••••••••"
+                placeholder="Votre mot de passe"
               />
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>

@@ -28,7 +28,7 @@ const ForgotPasswordPage: React.FC = () => {
     setError(null);
     setIsSubmitting(true);
     try {
-      await authService.forgotPassword(data);
+      await authService.forgotPassword(data.email);
       setSuccess(true);
     } catch (err: any) {
       setError('Une erreur est survenue. Veuillez reessayer.');

@@ -49,15 +49,100 @@ class SecretaryController extends Controller
                 'patient:id,name,email,phone',
                 'doctor.user:id,name,email',
                 'doctor.specialty:id,name',
+                'specialty:id,name',
             ])
-            ->orderBy('scheduled_at', 'asc')
+            ->orderBy('created_at', 'asc')
             ->get();
 
         return response()->json($appointments);
     }
 
     /**
-     * Valider un rendez-vous et eventuellement assigner un medecin.
+     * Medecins disponibles pour une specialite donnee.
+     * GET /api/secretary/doctors-by-specialty/{specialtyId}
+     */
+    public function doctorsBySpecialty(int $specialtyId): JsonResponse
+    {
+        $doctors = Doctor::where('specialty_id', $specialtyId)
+            ->with(['user:id,name,email', 'schedules'])
+            ->get()
+            ->map(function ($doctor) {
+                return [
+                    'id' => $doctor->id,
+                    'name' => $doctor->user->name ?? 'N/A',
+                    'email' => $doctor->user->email ?? '',
+                    'schedules' => $doctor->schedules->map(function ($s) {
+                        return [
+                            'day_of_week' => $s->day_of_week,
+                            'start_time' => $s->start_time,
+                            'end_time' => $s->end_time,
+                            'is_available' => $s->is_available,
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json($doctors);
+    }
+
+    /**
+     * Assigner un medecin et une date a un RDV pending.
+     * PUT /api/secretary/appointments/{appointment}/assign
+     */
+    public function assignDoctor(Request $request, Appointment $appointment): JsonResponse
+    {
+        if ($appointment->status !== 'pending') {
+            return response()->json([
+                'message' => 'Ce rendez-vous ne peut plus etre modifie (statut actuel : ' . $appointment->status . ').'
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'doctor_id' => 'required|exists:doctors,id',
+            'scheduled_at' => 'required|date|after:now',
+        ]);
+
+        $doctor = Doctor::with('specialty')->findOrFail($validated['doctor_id']);
+
+        // Verifier que le medecin est de la bonne specialite
+        if ($appointment->specialty_id && $doctor->specialty_id !== $appointment->specialty_id) {
+            return response()->json([
+                'message' => 'Ce medecin n\'est pas de la specialite demandee.',
+            ], 422);
+        }
+
+        // Verifier que le creneau n'est pas deja pris
+        $conflict = Appointment::where('doctor_id', $doctor->id)
+            ->where('scheduled_at', $validated['scheduled_at'])
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where('id', '!=', $appointment->id)
+            ->exists();
+
+        if ($conflict) {
+            return response()->json([
+                'message' => 'Ce creneau est deja reserve pour ce medecin.',
+            ], 422);
+        }
+
+        $appointment->update([
+            'doctor_id' => $doctor->id,
+            'scheduled_at' => $validated['scheduled_at'],
+            'status' => 'confirmed',
+        ]);
+
+        return response()->json([
+            'message' => 'Medecin assigne et rendez-vous confirme.',
+            'appointment' => $appointment->load([
+                'patient:id,name,email',
+                'doctor.user:id,name,email',
+                'doctor.specialty:id,name',
+                'specialty:id,name',
+            ]),
+        ]);
+    }
+
+    /**
+     * Valider un rendez-vous (confirmer sans changer de medecin).
      */
     public function validateAppointment(Request $request, Appointment $appointment): JsonResponse
     {
@@ -69,16 +154,16 @@ class SecretaryController extends Controller
 
         $request->validate([
             'doctor_id' => 'sometimes|exists:doctors,id',
+            'scheduled_at' => 'sometimes|date|after:now',
         ]);
 
         $appointment->status = 'confirmed';
 
         if ($request->has('doctor_id')) {
-            $doctor = Doctor::find($request->doctor_id);
-            if (!$doctor) {
-                return response()->json(['message' => 'Medecin introuvable.'], 404);
-            }
-            $appointment->doctor_id = $doctor->id;
+            $appointment->doctor_id = $request->doctor_id;
+        }
+        if ($request->has('scheduled_at')) {
+            $appointment->scheduled_at = $request->scheduled_at;
         }
 
         $appointment->save();
@@ -89,6 +174,7 @@ class SecretaryController extends Controller
                 'patient:id,name,email',
                 'doctor.user:id,name,email',
                 'doctor.specialty:id,name',
+                'specialty:id,name',
             ]),
         ]);
     }
@@ -120,7 +206,6 @@ class SecretaryController extends Controller
 
     /**
      * Ouvrir / fermer la prise de rendez-vous en ligne.
-     * Stocke un flag dans le cache (ou config).
      */
     public function toggleOnlineBooking(Request $request): JsonResponse
     {
@@ -128,7 +213,6 @@ class SecretaryController extends Controller
             'enabled' => 'required|boolean',
         ]);
 
-        // Utilise le cache Laravel pour stocker le flag
         cache()->forever('online_booking_enabled', $request->enabled);
 
         return response()->json([

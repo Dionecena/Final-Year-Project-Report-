@@ -148,21 +148,21 @@ const LandingPage: React.FC = () => {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              to="/register"
+              to="/app/appointments/new"
               className="px-6 sm:px-8 py-3 sm:py-4 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary-600/30 inline-flex items-center gap-2"
             >
-              Commencer &rarr;
+              Prendre rendez-vous &rarr;
             </Link>
             <Link
-              to="/login"
+              to="/app/preconsultation"
               className="px-6 sm:px-8 py-3 sm:py-4 bg-white border border-gray-200 hover:border-gray-300 text-gray-900 text-sm font-semibold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md inline-flex items-center gap-2"
             >
-              Se connecter
+              Pré-consultation IA
             </Link>
           </div>
         </div>
-        {/* Hero 3D orb */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-[90%] pointer-events-none z-0 hidden md:block">
+        {/* Hero 3D orb – visible on all screens, smaller on mobile */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none z-0 w-[70%] h-[50%] opacity-40 md:w-1/2 md:h-[90%] md:opacity-100">
           <HeroOrb />
         </div>
       </section>
@@ -337,12 +337,20 @@ const LandingPage: React.FC = () => {
         <p className="text-slate-400 text-base sm:text-lg mb-8 sm:mb-10 relative z-10">
           Accédez à votre espace patient et commencez votre parcours de soin en ligne.
         </p>
-        <Link
-          to="/register"
-          className="relative z-10 inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-primary-600 hover:bg-primary-700 text-white text-sm sm:text-base font-semibold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary-600/30"
-        >
-          Créer mon compte &rarr;
-        </Link>
+        <div className="flex flex-wrap justify-center gap-3 relative z-10">
+          <Link
+            to="/app/appointments/new"
+            className="inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-primary-600 hover:bg-primary-700 text-white text-sm sm:text-base font-semibold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary-600/30"
+          >
+            Prendre rendez-vous &rarr;
+          </Link>
+          <Link
+            to="/app/preconsultation"
+            className="inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm sm:text-base font-semibold rounded-xl transition-all hover:-translate-y-0.5"
+          >
+            Pré-consultation IA
+          </Link>
+        </div>
       </section>
 
       {/* ========== FOOTER ========== */}

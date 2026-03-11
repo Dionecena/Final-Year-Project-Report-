@@ -19,9 +19,18 @@ interface Appointment {
   status: string;
   reason: string;
   notes: string | null;
+  doctor_id: number | null;
+  scheduled_at: string | null;
   patient: { id: number; name: string; email: string; phone?: string } | null;
-  doctor: { id: number; name: string; email: string } | null;
+  doctor: { id: number; user: { id: number; name: string; email: string } } | null;
   specialty: { id: number; name: string } | null;
+}
+
+interface DoctorOption {
+  id: number;
+  name: string;
+  email: string;
+  schedules: { day_of_week: number; start_time: string; end_time: string }[];
 }
 
 const SecretaryDashboardPage: React.FC = () => {
@@ -30,6 +39,16 @@ const SecretaryDashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [onlineBooking, setOnlineBooking] = useState(true);
   const [togglingBooking, setTogglingBooking] = useState(false);
+
+  // Modal assignation medecin
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [doctors, setDoctors] = useState<DoctorOption[]>([]);
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null);
+  const [scheduledAt, setScheduledAt] = useState('');
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -41,13 +60,13 @@ const SecretaryDashboardPage: React.FC = () => {
       const [statsRes, appointmentsRes, bookingRes] = await Promise.all([
         api.get('/secretary/dashboard'),
         api.get('/secretary/pending-appointments'),
-        api.get('/online-booking-status'),
+        api.get('/secretary/online-booking/status'),
       ]);
       setStats(statsRes.data);
       setPendingAppointments(appointmentsRes.data);
       setOnlineBooking(bookingRes.data.online_booking_enabled);
     } catch (error) {
-      console.error('Erreur chargement dashboard secrétaire:', error);
+      console.error('Erreur chargement dashboard secretaire:', error);
     } finally {
       setLoading(false);
     }
@@ -56,7 +75,7 @@ const SecretaryDashboardPage: React.FC = () => {
   const handleToggleBooking = async () => {
     try {
       setTogglingBooking(true);
-      const res = await api.post('/secretary/toggle-online-booking', {
+      const res = await api.put('/secretary/online-booking/toggle', {
         enabled: !onlineBooking,
       });
       setOnlineBooking(res.data.online_booking_enabled);
@@ -67,12 +86,75 @@ const SecretaryDashboardPage: React.FC = () => {
     }
   };
 
+  // =========================================================
+  //  ASSIGN DOCTOR MODAL
+  // =========================================================
+
+  const openAssignModal = async (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setSelectedDoctorId(null);
+    setScheduledAt('');
+    setAssignError('');
+    setAssignModalOpen(true);
+
+    // Charger les medecins de la specialite
+    if (appointment.specialty?.id) {
+      try {
+        setLoadingDoctors(true);
+        const res = await api.get(`/secretary/doctors-by-specialty/${appointment.specialty.id}`);
+        setDoctors(res.data);
+      } catch (error) {
+        console.error('Erreur chargement medecins:', error);
+        setDoctors([]);
+      } finally {
+        setLoadingDoctors(false);
+      }
+    }
+  };
+
+  const closeAssignModal = () => {
+    setAssignModalOpen(false);
+    setSelectedAppointment(null);
+    setDoctors([]);
+    setSelectedDoctorId(null);
+    setScheduledAt('');
+    setAssignError('');
+  };
+
+  const handleAssignDoctor = async () => {
+    if (!selectedAppointment || !selectedDoctorId || !scheduledAt) {
+      setAssignError('Veuillez selectionner un medecin et un creneau.');
+      return;
+    }
+
+    try {
+      setAssigning(true);
+      setAssignError('');
+      await api.put(`/secretary/appointments/${selectedAppointment.id}/assign`, {
+        doctor_id: selectedDoctorId,
+        scheduled_at: scheduledAt,
+      });
+      closeAssignModal();
+      fetchData();
+    } catch (error: any) {
+      const msg = error.response?.data?.error || error.response?.data?.message || 'Erreur lors de l\'assignation';
+      setAssignError(msg);
+    } finally {
+      setAssigning(false);
+    }
+  };
+
+  // =========================================================
+  //  VALIDATE / REJECT
+  // =========================================================
+
   const handleValidate = async (id: number) => {
     try {
-      await api.patch(`/secretary/appointments/${id}/validate`);
+      await api.put(`/secretary/appointments/${id}/validate`);
       fetchData();
-    } catch (error) {
-      console.error('Erreur validation:', error);
+    } catch (error: any) {
+      const msg = error.response?.data?.error || 'Erreur validation';
+      alert(msg);
     }
   };
 
@@ -80,7 +162,7 @@ const SecretaryDashboardPage: React.FC = () => {
     const reason = window.prompt('Motif du rejet (obligatoire) :');
     if (!reason || reason.trim() === '') return;
     try {
-      await api.patch(`/secretary/appointments/${id}/reject`, {
+      await api.put(`/secretary/appointments/${id}/reject`, {
         rejection_reason: reason,
       });
       fetchData();
@@ -88,6 +170,23 @@ const SecretaryDashboardPage: React.FC = () => {
       console.error('Erreur rejet:', error);
     }
   };
+
+  // =========================================================
+  //  HELPERS
+  // =========================================================
+
+  const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+
+  const formatSchedules = (schedules: DoctorOption['schedules']) => {
+    if (!schedules || schedules.length === 0) return 'Pas de planning';
+    return schedules
+      .map((s) => `${dayNames[s.day_of_week] || s.day_of_week} ${s.start_time}-${s.end_time}`)
+      .join(', ');
+  };
+
+  // =========================================================
+  //  RENDER
+  // =========================================================
 
   if (loading) {
     return (
@@ -99,171 +198,242 @@ const SecretaryDashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Espace Secrétaire</h1>
-          <p className="text-gray-500 mt-1">Gestion des rendez-vous et du planning</p>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-yellow-400">
+          <div className="text-sm text-gray-500">En attente</div>
+          <div className="text-2xl font-bold text-yellow-600">{stats?.pending_appointments ?? 0}</div>
         </div>
-        <div className="flex items-center space-x-3">
-          <span className="text-sm text-gray-600">RDV en ligne :</span>
-          <button
-            onClick={handleToggleBooking}
-            disabled={togglingBooking}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              onlineBooking ? 'bg-green-500' : 'bg-gray-300'
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                onlineBooking ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
-          </button>
-          <span className={`text-sm font-medium ${onlineBooking ? 'text-green-600' : 'text-red-600'}`}>
-            {onlineBooking ? 'Activé' : 'Désactivé'}
-          </span>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-400">
+          <div className="text-sm text-gray-500">Confirmes aujourd'hui</div>
+          <div className="text-2xl font-bold text-green-600">{stats?.confirmed_today ?? 0}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-400">
+          <div className="text-sm text-gray-500">Total aujourd'hui</div>
+          <div className="text-2xl font-bold text-blue-600">{stats?.total_today ?? 0}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-red-400">
+          <div className="text-sm text-gray-500">Annules aujourd'hui</div>
+          <div className="text-2xl font-bold text-red-600">{stats?.cancelled_today ?? 0}</div>
         </div>
       </div>
 
-      {/* Statistiques */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">En attente</p>
-                <p className="text-3xl font-bold text-orange-600">{stats.pending_appointments}</p>
-              </div>
-              <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Confirmés aujourd'hui</p>
-                <p className="text-3xl font-bold text-green-600">{stats.confirmed_today}</p>
-              </div>
-              <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Total aujourd'hui</p>
-                <p className="text-3xl font-bold text-blue-600">{stats.total_today}</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Cette semaine</p>
-                <p className="text-3xl font-bold text-purple-600">{stats.weekly_appointments}</p>
-              </div>
-              <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-            </div>
-          </div>
+      {/* Deuxieme rangee */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-400">
+          <div className="text-sm text-gray-500">Patients total</div>
+          <div className="text-2xl font-bold text-purple-600">{stats?.total_patients ?? 0}</div>
         </div>
-      )}
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-indigo-400">
+          <div className="text-sm text-gray-500">Medecins total</div>
+          <div className="text-2xl font-bold text-indigo-600">{stats?.total_doctors ?? 0}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-orange-400">
+          <div className="text-sm text-gray-500">RDV cette semaine</div>
+          <div className="text-2xl font-bold text-orange-600">{stats?.weekly_appointments ?? 0}</div>
+        </div>
+      </div>
 
-      {/* Rendez-vous en attente */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Rendez-vous en attente ({pendingAppointments.length})
-          </h2>
+      {/* Online Booking Toggle */}
+      <div className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
+        <div>
+          <h3 className="font-semibold text-gray-800">Reservation en ligne</h3>
+          <p className="text-sm text-gray-500">
+            {onlineBooking ? 'Les patients peuvent prendre RDV en ligne' : 'La reservation en ligne est desactivee'}
+          </p>
+        </div>
+        <button
+          onClick={handleToggleBooking}
+          disabled={togglingBooking}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            onlineBooking
+              ? 'bg-red-500 hover:bg-red-600 text-white'
+              : 'bg-green-500 hover:bg-green-600 text-white'
+          } ${togglingBooking ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {togglingBooking ? '...' : onlineBooking ? 'Desactiver' : 'Activer'}
+        </button>
+      </div>
+
+      {/* Pending Appointments Table */}
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="p-4 border-b flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-800">RDV en attente de validation</h2>
           <Link
-            to="/app/secretary/appointments"
-            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            to="/secretary/appointments"
+            className="text-sm text-primary-600 hover:underline"
           >
-            Voir tout &rarr;
+            Voir tout
           </Link>
         </div>
-
-        {pendingAppointments.length === 0 ? (
-          <div className="p-10 text-center text-gray-500">
-            <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p>Aucun rendez-vous en attente</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {pendingAppointments.slice(0, 10).map((apt) => (
-              <div key={apt.id} className="p-4 hover:bg-gray-50 flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                      <span className="text-sm font-medium text-primary-700">
-                        {apt.patient?.name?.charAt(0) || '?'}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{apt.patient?.name || 'Patient inconnu'}</p>
-                      <p className="text-sm text-gray-500">
-                        {apt.date} à {apt.time} — {apt.specialty?.name || 'Spécialité N/A'}
-                      </p>
-                      {apt.reason && (
-                        <p className="text-sm text-gray-400 mt-1">Motif : {apt.reason}</p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Specialite</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Medecin</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingAppointments.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                    Aucun rendez-vous en attente
+                  </td>
+                </tr>
+              ) : (
+                pendingAppointments.map((app) => (
+                  <tr key={app.id} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-800">{app.patient?.name || 'N/A'}</div>
+                      <div className="text-sm text-gray-500">{app.patient?.email}</div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{app.specialty?.name || 'N/A'}</td>
+                    <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{app.reason}</td>
+                    <td className="px-4 py-3">
+                      {app.doctor ? (
+                        <span className="text-green-600 font-medium">Dr. {app.doctor.user?.name}</span>
+                      ) : (
+                        <span className="text-yellow-600 text-sm">Non assigne</span>
                       )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 ml-4">
-                  <button
-                    onClick={() => handleValidate(apt.id)}
-                    className="px-3 py-1.5 bg-green-50 text-green-700 text-sm font-medium rounded-lg hover:bg-green-100 transition-colors"
-                  >
-                    Valider
-                  </button>
-                  <button
-                    onClick={() => handleReject(apt.id)}
-                    className="px-3 py-1.5 bg-red-50 text-red-700 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors"
-                  >
-                    Rejeter
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => openAssignModal(app)}
+                          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                        >
+                          Assigner
+                        </button>
+                        <button
+                          onClick={() => handleValidate(app.id)}
+                          className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                          title={!app.doctor_id ? 'Un medecin doit etre assigne avant validation' : ''}
+                        >
+                          Valider
+                        </button>
+                        <button
+                          onClick={() => handleReject(app.id)}
+                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                        >
+                          Rejeter
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Stats complémentaires */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
-            <p className="text-sm text-gray-500">Patients actifs</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total_patients}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
-            <p className="text-sm text-gray-500">Médecins actifs</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total_doctors}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
-            <p className="text-sm text-gray-500">Annulés aujourd'hui</p>
-            <p className="text-2xl font-bold text-red-600 mt-1">{stats.cancelled_today}</p>
+      {/* =========================================================
+          MODAL : Assigner un medecin
+         ========================================================= */}
+      {assignModalOpen && selectedAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Assigner un medecin
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Patient : <strong>{selectedAppointment.patient?.name}</strong> --
+                Specialite : <strong>{selectedAppointment.specialty?.name}</strong>
+              </p>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 space-y-4">
+              {/* Liste des medecins */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Medecin
+                </label>
+                {loadingDoctors ? (
+                  <div className="flex items-center space-x-2 py-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+                    <span className="text-sm text-gray-500">Chargement des medecins...</span>
+                  </div>
+                ) : doctors.length === 0 ? (
+                  <p className="text-sm text-red-500">Aucun medecin disponible pour cette specialite.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {doctors.map((doc) => (
+                      <label
+                        key={doc.id}
+                        className={`flex items-start p-3 border rounded-lg cursor-pointer transition-colors ${
+                          selectedDoctorId === doc.id
+                            ? 'border-primary-500 bg-primary-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="doctor"
+                          value={doc.id}
+                          checked={selectedDoctorId === doc.id}
+                          onChange={() => setSelectedDoctorId(doc.id)}
+                          className="mt-1 mr-3"
+                        />
+                        <div>
+                          <div className="font-medium text-gray-800">Dr. {doc.name}</div>
+                          <div className="text-xs text-gray-500">{doc.email}</div>
+                          <div className="text-xs text-gray-400 mt-1">
+                            {formatSchedules(doc.schedules)}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Date / heure du RDV */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date et heure du rendez-vous
+                </label>
+                <input
+                  type="datetime-local"
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                  min={new Date().toISOString().slice(0, 16)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+
+              {/* Erreur */}
+              {assignError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{assignError}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t flex justify-end space-x-3">
+              <button
+                onClick={closeAssignModal}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleAssignDoctor}
+                disabled={assigning || !selectedDoctorId || !scheduledAt}
+                className={`px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 ${
+                  assigning || !selectedDoctorId || !scheduledAt ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {assigning ? 'Assignation...' : 'Assigner le medecin'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -124,9 +124,49 @@ const useCarousel = (total: number, interval = 5000) => {
   return { current, goTo };
 };
 
+// ---- Legal Modal Component ----
+const LegalModal: React.FC<{ open: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ open, onClose, title, children }) => {
+  useEffect(() => {
+    if (open) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      {/* Modal */}
+      <div className="relative w-full max-w-3xl max-h-[90vh] mx-4 bg-gray-950 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
+          <h2 className="text-lg font-bold text-white">{title}</h2>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            aria-label="Fermer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        {/* Content */}
+        <div className="overflow-y-auto p-6 text-slate-300 space-y-8 legal-modal-scroll">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ---- Component ----
 const LandingPage: React.FC = () => {
   const { current: activeTestimonial, goTo: goToTestimonial } = useCarousel(testimonials.length, 5000);
+  const [showConfidentialite, setShowConfidentialite] = useState(false);
+  const [showMentionsLegales, setShowMentionsLegales] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans antialiased overflow-x-hidden">
@@ -377,13 +417,300 @@ const LandingPage: React.FC = () => {
               >
                 contact@mediconsult.com
               </a>
-              <Link to="/confidentialite" className="text-slate-400 hover:text-white transition-colors">Confidentialité</Link>
-              <Link to="/mentions-legales" className="text-slate-400 hover:text-white transition-colors">Mentions légales</Link>
+              <button onClick={() => setShowConfidentialite(true)} className="text-slate-400 hover:text-white transition-colors">Confidentialit&eacute;</button>
+              <button onClick={() => setShowMentionsLegales(true)} className="text-slate-400 hover:text-white transition-colors">Mentions l&eacute;gales</button>
             </div>
             <div className="text-xs text-slate-600">&copy; 2025 MediConsult. Tous droits réservés.</div>
           </div>
         </div>
       </footer>
+
+      {/* ========== MODAL CONFIDENTIALITE ========== */}
+      <LegalModal open={showConfidentialite} onClose={() => setShowConfidentialite(false)} title="Politique de Confidentialit&eacute;">
+        <p className="text-slate-400 text-xs">Derni&egrave;re mise &agrave; jour : Mars 2025</p>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">1. Introduction</h3>
+          <p className="leading-relaxed text-sm">
+            MediConsult s&rsquo;engage &agrave; prot&eacute;ger la vie priv&eacute;e de ses utilisateurs.
+            La pr&eacute;sente politique de confidentialit&eacute; d&eacute;crit les types de donn&eacute;es
+            personnelles que nous collectons, la mani&egrave;re dont nous les utilisons, les stockons
+            et les prot&eacute;geons, conform&eacute;ment au R&egrave;glement G&eacute;n&eacute;ral sur la
+            Protection des Donn&eacute;es (RGPD) et &agrave; la r&eacute;glementation fran&ccedil;aise en
+            vigueur relative aux donn&eacute;es de sant&eacute;.
+          </p>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">2. Responsable du traitement</h3>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-1 text-sm">
+            <p><span className="text-white font-medium">Raison sociale :</span> MediConsult SAS</p>
+            <p><span className="text-white font-medium">Adresse :</span> 12 Rue de la Sant&eacute;, 75013 Paris, France</p>
+            <p><span className="text-white font-medium">Email :</span> dpo@mediconsult.com</p>
+            <p><span className="text-white font-medium">DPO :</span> dpo@mediconsult.com</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">3. Donn&eacute;es collect&eacute;es</h3>
+          <p className="leading-relaxed text-sm mb-3">
+            Dans le cadre de nos services de t&eacute;l&eacute;m&eacute;decine et de pr&eacute;-consultation IA,
+            nous collectons les cat&eacute;gories suivantes :
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              { title: 'Donn\u00e9es d\'identit\u00e9', items: 'Nom, pr\u00e9nom, date de naissance, email, t\u00e9l\u00e9phone' },
+              { title: 'Donn\u00e9es de sant\u00e9', items: 'Sympt\u00f4mes, historique m\u00e9dical, r\u00e9sultats pr\u00e9-consultation IA, ordonnances' },
+              { title: 'Donn\u00e9es de connexion', items: 'Adresse IP, navigateur, pages visit\u00e9es, dur\u00e9e de session' },
+              { title: 'Donn\u00e9es de paiement', items: 'Informations de facturation (via prestataire s\u00e9curis\u00e9)' },
+            ].map((cat) => (
+              <div key={cat.title} className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <h4 className="text-white font-medium text-sm mb-1">{cat.title}</h4>
+                <p className="text-xs text-slate-400">{cat.items}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">4. Finalit&eacute;s du traitement</h3>
+          <ul className="space-y-1.5 text-sm">
+            {[
+              'Fournir nos services de t\u00e9l\u00e9m\u00e9decine et de pr\u00e9-consultation IA',
+              'G\u00e9rer votre compte utilisateur et vos rendez-vous',
+              'Am\u00e9liorer la qualit\u00e9 de nos services',
+              'Respecter nos obligations l\u00e9gales et r\u00e9glementaires',
+              'Assurer la s\u00e9curit\u00e9 de la plateforme',
+              'Envoyer des communications relatives \u00e0 vos rendez-vous',
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">5. Base l&eacute;gale du traitement</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
+              <thead>
+                <tr className="bg-white/5">
+                  <th className="text-left p-3 text-white font-medium">Traitement</th>
+                  <th className="text-left p-3 text-white font-medium">Base l&eacute;gale</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                <tr><td className="p-3">Services de t&eacute;l&eacute;m&eacute;decine</td><td className="p-3">Ex&eacute;cution du contrat</td></tr>
+                <tr><td className="p-3">Donn&eacute;es de sant&eacute;</td><td className="p-3">Consentement explicite (art. 9 RGPD)</td></tr>
+                <tr><td className="p-3">S&eacute;curit&eacute; de la plateforme</td><td className="p-3">Int&eacute;r&ecirc;t l&eacute;gitime</td></tr>
+                <tr><td className="p-3">Obligations l&eacute;gales</td><td className="p-3">Obligation l&eacute;gale</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">6. Dur&eacute;e de conservation</h3>
+          <ul className="space-y-1.5 text-sm">
+            <li className="flex items-start gap-2"><span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" /><span><span className="text-white font-medium">Donn&eacute;es de sant&eacute; :</span> 20 ans (Code de la sant&eacute; publique)</span></li>
+            <li className="flex items-start gap-2"><span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" /><span><span className="text-white font-medium">Donn&eacute;es de compte :</span> 3 ans apr&egrave;s derni&egrave;re activit&eacute;</span></li>
+            <li className="flex items-start gap-2"><span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" /><span><span className="text-white font-medium">Donn&eacute;es de connexion :</span> 12 mois</span></li>
+            <li className="flex items-start gap-2"><span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" /><span><span className="text-white font-medium">Donn&eacute;es de paiement :</span> 10 ans (pi&egrave;ces comptables)</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">7. S&eacute;curit&eacute; des donn&eacute;es</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              { icon: '\uD83D\uDD12', text: 'Chiffrement TLS + AES-256' },
+              { icon: '\uD83C\uDFE5', text: 'H\u00e9bergement certifi\u00e9 HDS' },
+              { icon: '\uD83D\uDD10', text: 'Authentification s\u00e9curis\u00e9e' },
+              { icon: '\uD83D\uDCCB', text: 'Audits de s\u00e9curit\u00e9 r\u00e9guliers' },
+            ].map((item) => (
+              <div key={item.text} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
+                <span className="text-lg">{item.icon}</span>
+                <span className="text-sm">{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">8. Cookies</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border border-white/10 rounded-xl overflow-hidden">
+              <thead>
+                <tr className="bg-white/5">
+                  <th className="text-left p-3 text-white font-medium">Type</th>
+                  <th className="text-left p-3 text-white font-medium">Finalit&eacute;</th>
+                  <th className="text-left p-3 text-white font-medium">Dur&eacute;e</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                <tr><td className="p-3">Essentiels</td><td className="p-3">Authentification, s&eacute;curit&eacute;</td><td className="p-3">Session</td></tr>
+                <tr><td className="p-3">Fonctionnels</td><td className="p-3">Pr&eacute;f&eacute;rences</td><td className="p-3">12 mois</td></tr>
+                <tr><td className="p-3">Analytiques</td><td className="p-3">Am&eacute;lioration du service</td><td className="p-3">13 mois</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">9. Vos droits</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              { right: 'Droit d\'acc\u00e8s', desc: 'Obtenir une copie de vos donn\u00e9es' },
+              { right: 'Droit de rectification', desc: 'Corriger des donn\u00e9es inexactes' },
+              { right: 'Droit \u00e0 l\'effacement', desc: 'Demander la suppression' },
+              { right: 'Droit \u00e0 la portabilit\u00e9', desc: 'R\u00e9cup\u00e9rer vos donn\u00e9es' },
+              { right: 'Droit d\'opposition', desc: 'Vous opposer au traitement' },
+              { right: 'Retrait du consentement', desc: 'Retirer votre consentement \u00e0 tout moment' },
+            ].map((item) => (
+              <div key={item.right} className="bg-white/5 border border-white/10 rounded-xl p-3">
+                <h4 className="text-white font-medium text-sm mb-1">{item.right}</h4>
+                <p className="text-xs text-slate-400">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 bg-primary-900/20 border border-primary-500/20 rounded-xl p-3 text-sm">
+            Contact DPO : <a href="mailto:dpo@mediconsult.com" className="text-primary-400 hover:underline">dpo@mediconsult.com</a>
+            &nbsp;|&nbsp; CNIL : <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:underline">www.cnil.fr</a>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">10. Transferts de donn&eacute;es</h3>
+          <p className="leading-relaxed text-sm">
+            Vos donn&eacute;es sont h&eacute;berg&eacute;es en France (HDS). Aucun transfert de donn&eacute;es
+            de sant&eacute; hors UE. Si un transfert vers un pays tiers devait &ecirc;tre n&eacute;cessaire,
+            il serait encadr&eacute; par les clauses contractuelles types de la Commission europ&eacute;enne.
+          </p>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">11. Modifications</h3>
+          <p className="leading-relaxed text-sm">
+            Nous pouvons modifier cette politique &agrave; tout moment. Toute modification substantielle
+            vous sera notifi&eacute;e par email ou via la plateforme.
+          </p>
+        </section>
+      </LegalModal>
+
+      {/* ========== MODAL MENTIONS LEGALES ========== */}
+      <LegalModal open={showMentionsLegales} onClose={() => setShowMentionsLegales(false)} title="Mentions L&eacute;gales">
+        <p className="text-slate-400 text-xs">Derni&egrave;re mise &agrave; jour : Mars 2025</p>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">1. &Eacute;diteur du site</h3>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-1 text-sm">
+            <p><span className="text-white font-medium">Raison sociale :</span> MediConsult SAS</p>
+            <p><span className="text-white font-medium">Forme juridique :</span> SAS</p>
+            <p><span className="text-white font-medium">Capital social :</span> 10 000 &euro;</p>
+            <p><span className="text-white font-medium">Si&egrave;ge social :</span> 12 Rue de la Sant&eacute;, 75013 Paris</p>
+            <p><span className="text-white font-medium">RCS :</span> Paris B 123 456 789</p>
+            <p><span className="text-white font-medium">TVA :</span> FR 12 123456789</p>
+            <p><span className="text-white font-medium">Directeur de publication :</span> Dr. Sophie Martin</p>
+            <p><span className="text-white font-medium">Email :</span> <a href="mailto:contact@mediconsult.com" className="text-primary-400 hover:underline">contact@mediconsult.com</a></p>
+            <p><span className="text-white font-medium">T&eacute;l. :</span> +33 1 23 45 67 89</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">2. H&eacute;bergeur</h3>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-1 text-sm">
+            <p><span className="text-white font-medium">Raison sociale :</span> OVHcloud</p>
+            <p><span className="text-white font-medium">Adresse :</span> 2 Rue Kellermann, 59100 Roubaix</p>
+            <p><span className="text-white font-medium">T&eacute;l. :</span> +33 9 72 10 10 07</p>
+            <p><span className="text-white font-medium">Certification :</span> HDS</p>
+            <p><span className="text-white font-medium">Site :</span> <a href="https://www.ovhcloud.com" target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:underline">www.ovhcloud.com</a></p>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">3. Activit&eacute; r&eacute;glement&eacute;e</h3>
+          <p className="leading-relaxed text-sm mb-3">
+            MediConsult est une plateforme de t&eacute;l&eacute;m&eacute;decine permettant la mise en relation
+            de patients avec des professionnels de sant&eacute; inscrits aux ordres comp&eacute;tents.
+          </p>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-2 text-sm">
+            <p>M&eacute;decins inscrits au <span className="text-white font-medium">CNOM</span>, autoris&eacute;s t&eacute;l&eacute;m&eacute;decine (art. L.6316-1 CSP).</p>
+            <p>Plateforme conforme &agrave; la <span className="text-white font-medium">PGSSI-S</span>.</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">4. Propri&eacute;t&eacute; intellectuelle</h3>
+          <p className="leading-relaxed text-sm">
+            L&rsquo;ensemble du contenu (textes, images, logo, logiciels, bases de donn&eacute;es) est
+            prot&eacute;g&eacute; par le droit d&rsquo;auteur. Toute reproduction sans autorisation
+            &eacute;crite est interdite.
+          </p>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">5. Responsabilit&eacute;</h3>
+          <div className="space-y-3">
+            <div>
+              <h4 className="text-white font-medium text-sm mb-1">5.1 Informations m&eacute;dicales</h4>
+              <p className="text-sm">Les r&eacute;sultats de la pr&eacute;-consultation IA sont informatifs et ne constituent pas un diagnostic. Ils ne remplacent pas une consultation m&eacute;dicale.</p>
+            </div>
+            <div>
+              <h4 className="text-white font-medium text-sm mb-1">5.2 Disponibilit&eacute;</h4>
+              <p className="text-sm">Nous visons une disponibilit&eacute; 24/7 mais des interruptions de maintenance peuvent survenir.</p>
+            </div>
+            <div>
+              <h4 className="text-white font-medium text-sm mb-1">5.3 Liens hypertextes</h4>
+              <p className="text-sm">MediConsult d&eacute;cline toute responsabilit&eacute; quant au contenu des sites externes.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">6. Conditions d&rsquo;utilisation</h3>
+          <ul className="space-y-1.5 text-sm">
+            {[
+              'Fournir des informations exactes lors de l\'inscription',
+              'Ne pas usurper l\'identit\u00e9 d\'un tiers',
+              'Utiliser la plateforme conform\u00e9ment \u00e0 sa finalit\u00e9 m\u00e9dicale',
+              'Ne pas acc\u00e9der aux donn\u00e9es d\'autres utilisateurs',
+              'Respecter les professionnels de sant\u00e9',
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">7. Droit applicable</h3>
+          <p className="leading-relaxed text-sm">
+            Les pr&eacute;sentes sont r&eacute;gies par le droit fran&ccedil;ais. En cas de litige,
+            les tribunaux de Paris seront comp&eacute;tents.
+          </p>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">8. M&eacute;diation</h3>
+          <p className="leading-relaxed text-sm">
+            Tout consommateur peut recourir gratuitement &agrave; un m&eacute;diateur (art. L.611-1 Code
+            de la consommation) : <a href="mailto:mediation@mediconsult.com" className="text-primary-400 hover:underline">mediation@mediconsult.com</a>.
+          </p>
+        </section>
+
+        <section>
+          <h3 className="text-lg font-semibold text-white mb-2">9. Contact</h3>
+          <div className="bg-primary-900/20 border border-primary-500/20 rounded-xl p-4 text-sm space-y-1">
+            <p><span className="text-white font-medium">Email :</span> <a href="mailto:contact@mediconsult.com" className="text-primary-400 hover:underline">contact@mediconsult.com</a></p>
+            <p><span className="text-white font-medium">Courrier :</span> MediConsult SAS &mdash; 12 Rue de la Sant&eacute;, 75013 Paris</p>
+            <p><span className="text-white font-medium">T&eacute;l. :</span> +33 1 23 45 67 89</p>
+          </div>
+        </section>
+      </LegalModal>
     </div>
   );
 };

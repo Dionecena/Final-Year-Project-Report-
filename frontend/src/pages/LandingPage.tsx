@@ -161,8 +161,8 @@ const LandingPage: React.FC = () => {
             </Link>
           </div>
         </div>
-        {/* Hero 3D orb – visible on all screens, smaller on mobile */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none z-0 w-[70%] h-[50%] opacity-40 md:w-1/2 md:h-[90%] md:opacity-100">
+        {/* Hero 3D orb – full-screen animated background on mobile, positioned right on desktop */}
+        <div className="absolute inset-0 pointer-events-none z-0 opacity-30 md:inset-auto md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-1/2 md:h-[90%] md:opacity-100">
           <HeroOrb />
         </div>
       </section>

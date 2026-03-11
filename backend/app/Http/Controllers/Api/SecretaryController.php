@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class SecretaryController extends Controller
             'weekly_appointments'     => Appointment::whereBetween('scheduled_at', [
                                             $today->copy()->startOfWeek(),
                                             $today->copy()->endOfWeek(),
-                                        ])->count(),
+                                      ])->count(),
         ];
 
         return response()->json($stats);
@@ -76,7 +77,6 @@ class SecretaryController extends Controller
                             'day_of_week' => $s->day_of_week,
                             'start_time' => $s->start_time,
                             'end_time' => $s->end_time,
-                            'is_available' => $s->is_available,
                         ];
                     }),
                 ];
@@ -86,185 +86,113 @@ class SecretaryController extends Controller
     }
 
     /**
-     * Assigner un medecin et une date a un RDV pending.
-     * PUT /api/secretary/appointments/{appointment}/assign
+     * Confirmer un rendez-vous en attente.
+     * PUT /api/secretary/appointments/{id}/confirm
      */
-    public function assignDoctor(Request $request, Appointment $appointment): JsonResponse
+    public function confirmAppointment(Request $request, Appointment $appointment): JsonResponse
     {
         if ($appointment->status !== 'pending') {
-            return response()->json([
-                'message' => 'Ce rendez-vous ne peut plus etre modifie (statut actuel : ' . $appointment->status . ').'
-            ], 422);
+            return response()->json(['error' => 'Ce rendez-vous n\'est pas en attente'], 422);
         }
 
         $validated = $request->validate([
-            'doctor_id' => 'required|exists:doctors,id',
-            'scheduled_at' => 'required|date|after:now',
+            'doctor_id'     => 'required|exists:doctors,id',
+            'scheduled_at'  => 'required|date|after:now',
         ]);
 
-        $doctor = Doctor::with('specialty')->findOrFail($validated['doctor_id']);
-
-        // Verifier que le medecin est de la bonne specialite
-        if ($appointment->specialty_id && $doctor->specialty_id !== $appointment->specialty_id) {
-            return response()->json([
-                'message' => 'Ce medecin n\'est pas de la specialite demandee.',
-            ], 422);
-        }
-
-        // Verifier que le creneau n'est pas deja pris
-        $conflict = Appointment::where('doctor_id', $doctor->id)
-            ->where('scheduled_at', $validated['scheduled_at'])
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->where('id', '!=', $appointment->id)
-            ->exists();
-
-        if ($conflict) {
-            return response()->json([
-                'message' => 'Ce creneau est deja reserve pour ce medecin.',
-            ], 422);
-        }
-
         $appointment->update([
-            'doctor_id' => $doctor->id,
+            'doctor_id'    => $validated['doctor_id'],
             'scheduled_at' => $validated['scheduled_at'],
-            'status' => 'confirmed',
+            'status'       => 'confirmed',
+        ]);
+
+        $appointment->load(['patient:id,name', 'doctor.user:id,name', 'specialty:id,name']);
+
+        // Notifier le patient que son RDV est confirme
+        $doctorName = $appointment->doctor->user->name ?? 'un medecin';
+        $specialtyName = $appointment->specialty->name ?? '';
+        $scheduledAt = Carbon::parse($appointment->scheduled_at)->format('d/m/Y \u00e0 H:i');
+
+        Notification::create([
+            'user_id' => $appointment->patient_id,
+            'type'    => 'appointment',
+            'title'   => 'Rendez-vous confirm\u00e9',
+            'message' => "Votre rendez-vous en {$specialtyName} avec Dr. {$doctorName} est confirm\u00e9 pour le {$scheduledAt}.",
+            'data'    => [
+                'appointment_id' => $appointment->id,
+                'doctor_name'    => $doctorName,
+                'scheduled_at'   => $appointment->scheduled_at,
+                'action'         => 'confirmed',
+            ],
         ]);
 
         return response()->json([
-            'message' => 'Medecin assigne et rendez-vous confirme.',
-            'appointment' => $appointment->load([
-                'patient:id,name,email',
-                'doctor.user:id,name,email',
-                'doctor.specialty:id,name',
-                'specialty:id,name',
-            ]),
+            'message' => 'Rendez-vous confirme avec succes',
+            'appointment' => $appointment,
         ]);
     }
 
     /**
-     * Valider un rendez-vous (confirmer, avec possibilite de changer medecin/date).
-     *
-     * SECURITE : memes verifications que assignDoctor (specialite + conflit creneau).
+     * Refuser / annuler un rendez-vous.
+     * PUT /api/secretary/appointments/{id}/cancel
      */
-    public function validateAppointment(Request $request, Appointment $appointment): JsonResponse
+    public function cancelAppointment(Request $request, Appointment $appointment): JsonResponse
     {
-        if ($appointment->status !== 'pending') {
-            return response()->json([
-                'message' => 'Ce rendez-vous ne peut plus etre valide (statut actuel : ' . $appointment->status . ').'
-            ], 422);
+        if (in_array($appointment->status, ['completed', 'cancelled'])) {
+            return response()->json(['error' => 'Ce rendez-vous ne peut pas etre annule'], 422);
         }
 
         $validated = $request->validate([
-            'doctor_id' => 'sometimes|required|exists:doctors,id',
-            'scheduled_at' => 'sometimes|required|date|after:now',
+            'cancellation_reason' => 'nullable|string|max:500',
         ]);
-
-        $doctorId = $validated['doctor_id'] ?? $appointment->doctor_id;
-        $scheduledAt = $validated['scheduled_at'] ?? $appointment->scheduled_at;
-
-        // On ne peut pas confirmer sans medecin ni date
-        if (!$doctorId) {
-            return response()->json([
-                'message' => 'Un medecin doit etre assigne avant de confirmer le rendez-vous.',
-            ], 422);
-        }
-
-        if (!$scheduledAt) {
-            return response()->json([
-                'message' => 'Une date doit etre definie avant de confirmer le rendez-vous.',
-            ], 422);
-        }
-
-        $doctor = Doctor::with('specialty')->findOrFail($doctorId);
-
-        // Verifier que le medecin est de la bonne specialite
-        if ($appointment->specialty_id && $doctor->specialty_id !== $appointment->specialty_id) {
-            return response()->json([
-                'message' => 'Ce medecin n\'est pas de la specialite demandee.',
-            ], 422);
-        }
-
-        // Verifier que le creneau n'est pas deja pris
-        $conflict = Appointment::where('doctor_id', $doctor->id)
-            ->where('scheduled_at', $scheduledAt)
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->where('id', '!=', $appointment->id)
-            ->exists();
-
-        if ($conflict) {
-            return response()->json([
-                'message' => 'Ce creneau est deja reserve pour ce medecin.',
-            ], 422);
-        }
 
         $appointment->update([
-            'doctor_id' => $doctor->id,
-            'scheduled_at' => $scheduledAt,
-            'status' => 'confirmed',
+            'status'             => 'cancelled',
+            'cancellation_reason' => $validated['cancellation_reason'] ?? null,
+        ]);
+
+        // Notifier le patient que son RDV est annul\u00e9
+        Notification::create([
+            'user_id' => $appointment->patient_id,
+            'type'    => 'appointment',
+            'title'   => 'Rendez-vous annul\u00e9',
+            'message' => 'Votre rendez-vous a \u00e9t\u00e9 annul\u00e9.' . ($validated['cancellation_reason'] ? ' Raison : ' . $validated['cancellation_reason'] : ''),
+            'data'    => [
+                'appointment_id'     => $appointment->id,
+                'cancellation_reason' => $validated['cancellation_reason'] ?? null,
+                'action'             => 'cancelled',
+            ],
         ]);
 
         return response()->json([
-            'message'     => 'Rendez-vous confirme avec succes.',
-            'appointment' => $appointment->load([
-                'patient:id,name,email',
-                'doctor.user:id,name,email',
-                'doctor.specialty:id,name',
-                'specialty:id,name',
-            ]),
+            'message' => 'Rendez-vous annule',
+            'appointment' => $appointment->fresh(),
         ]);
     }
 
     /**
-     * Rejeter un rendez-vous avec un motif obligatoire.
+     * Historique des rendez-vous (tous statuts).
      */
-    public function rejectAppointment(Request $request, Appointment $appointment): JsonResponse
+    public function appointmentHistory(Request $request): JsonResponse
     {
-        if ($appointment->status !== 'pending') {
-            return response()->json([
-                'message' => 'Ce rendez-vous ne peut plus etre rejete (statut actuel : ' . $appointment->status . ').'
-            ], 422);
+        $query = Appointment::with([
+            'patient:id,name,email,phone',
+            'doctor.user:id,name',
+            'specialty:id,name',
+        ])->orderBy('scheduled_at', 'desc');
+
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
         }
 
-        $request->validate([
-            'cancellation_reason' => 'required|string|max:500',
-        ]);
+        if ($request->has('date_from')) {
+            $query->whereDate('scheduled_at', '>=', $request->date_from);
+        }
 
-        $appointment->status = 'cancelled';
-        $appointment->cancellation_reason = $request->cancellation_reason;
-        $appointment->save();
+        if ($request->has('date_to')) {
+            $query->whereDate('scheduled_at', '<=', $request->date_to);
+        }
 
-        return response()->json([
-            'message'     => 'Rendez-vous rejete.',
-            'appointment' => $appointment->load(['patient:id,name,email']),
-        ]);
-    }
-
-    /**
-     * Ouvrir / fermer la prise de rendez-vous en ligne.
-     */
-    public function toggleOnlineBooking(Request $request): JsonResponse
-    {
-        $request->validate([
-            'enabled' => 'required|boolean',
-        ]);
-
-        cache()->forever('online_booking_enabled', $request->enabled);
-
-        return response()->json([
-            'message' => $request->enabled
-                ? 'La prise de rendez-vous en ligne est activee.'
-                : 'La prise de rendez-vous en ligne est desactivee.',
-            'online_booking_enabled' => $request->enabled,
-        ]);
-    }
-
-    /**
-     * Verifier si la prise de RDV en ligne est active.
-     */
-    public function onlineBookingStatus(): JsonResponse
-    {
-        return response()->json([
-            'online_booking_enabled' => cache()->get('online_booking_enabled', true),
-        ]);
+        return response()->json($query->paginate(20));
     }
 }

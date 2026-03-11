@@ -50,10 +50,11 @@ const NotificationsPage: React.FC = () => {
             if (filter === 'unread') params.unread_only = true;
             if (typeFilter) params.type = typeFilter;
 
-            const response = await axios.get<PaginatedResponse>('/api/notifications', { params });
-            setNotifications(response.data.data);
-            setLastPage(response.data.last_page);
-            setTotal(response.data.total);
+            const response = await axios.get('/api/notifications', { params });
+            const paginated = response.data.data;
+            setNotifications(paginated.data);
+            setLastPage(paginated.last_page);
+            setTotal(paginated.total);
         } catch (error) {
             console.error('Erreur lors du chargement des notifications:', error);
         } finally {
@@ -63,8 +64,8 @@ const NotificationsPage: React.FC = () => {
 
     const fetchUnreadCount = useCallback(async () => {
         try {
-            const response = await axios.get<{ unread_count: number }>('/api/notifications/unread-count');
-            setUnreadCount(response.data.unread_count);
+            const response = await axios.get('/api/notifications/unread-count');
+            setUnreadCount(response.data.data.count);
         } catch (error) {
             console.error('Erreur compteur non lues:', error);
         }
@@ -77,7 +78,7 @@ const NotificationsPage: React.FC = () => {
 
     const markAsRead = async (id: number) => {
         try {
-            await axios.patch(`/api/notifications/${id}/read`);
+            await axios.put(`/api/notifications/${id}/read`);
             setNotifications((prev) =>
                 prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
             );
@@ -89,7 +90,7 @@ const NotificationsPage: React.FC = () => {
 
     const markAllAsRead = async () => {
         try {
-            await axios.patch('/api/notifications/read-all');
+            await axios.put('/api/notifications/read-all');
             setNotifications((prev) =>
                 prev.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
             );

@@ -9,6 +9,11 @@ interface NavItem {
   roles: string[];
 }
 
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
 const navItems: NavItem[] = [
   // ---- Commun (tous les roles) ----
   {
@@ -168,7 +173,7 @@ const navItems: NavItem[] = [
   },
 ];
 
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -176,7 +181,6 @@ const Sidebar: React.FC = () => {
     user ? item.roles.includes(user.role) : false
   );
 
-  // Extraire les initiales depuis user.name (ex: "Moussa Dione" -> "MD")
   const getInitials = (name?: string): string => {
     if (!name) return '?';
     const parts = name.trim().split(/\s+/);
@@ -186,59 +190,95 @@ const Sidebar: React.FC = () => {
     return name.charAt(0).toUpperCase();
   };
 
+  // Fermer le sidebar quand on clique sur un lien (mobile uniquement)
+  const handleNavClick = () => {
+    if (window.innerWidth < 1024) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="flex flex-col w-64 bg-white border-r border-gray-200 min-h-screen">
-      {/* Logo */}
-      <div className="flex items-center justify-center h-16 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-primary-600">
-          MediConsult
-        </h1>
-      </div>
+    <>
+      {/* Overlay sombre sur mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity"
+          onClick={onClose}
+        />
+      )}
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        {filteredNavItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-              location.pathname === item.path || (item.path !== '/app/dashboard' && location.pathname.startsWith(item.path + '/'))
-                ? 'bg-primary-50 text-primary-700'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-            }`}
+      {/* Sidebar */}
+      <div
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Header avec logo + bouton fermer mobile */}
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+          <h1 className="text-xl font-bold text-primary-600">
+            MediConsult
+          </h1>
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Fermer le menu"
           >
-            <span className="mr-3">{item.icon}</span>
-            {item.name}
-          </Link>
-        ))}
-      </nav>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-      {/* User info & logout */}
-      <div className="p-4 border-t border-gray-200">
-        <Link to="/app/profile" className="flex items-center mb-3 hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors">
-          <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-            <span className="text-sm font-medium text-primary-700">
-              {getInitials(user?.name)}
-            </span>
-          </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-700">
-              {user?.name}
-            </p>
-            <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
-          </div>
-        </Link>
-        <button
-          onClick={logout}
-          className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors"
-        >
-          <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
-          </svg>
-          Deconnexion
-        </button>
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+          {filteredNavItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={handleNavClick}
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                location.pathname === item.path || (item.path !== '/app/dashboard' && location.pathname.startsWith(item.path + '/'))
+                  ? 'bg-primary-50 text-primary-700'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              <span className="mr-3">{item.icon}</span>
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+
+        {/* User info & logout */}
+        <div className="p-4 border-t border-gray-200">
+          <Link
+            to="/app/profile"
+            onClick={handleNavClick}
+            className="flex items-center mb-3 hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+              <span className="text-sm font-medium text-primary-700">
+                {getInitials(user?.name)}
+              </span>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-700">
+                {user?.name}
+              </p>
+              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+            </div>
+          </Link>
+          <button
+            onClick={logout}
+            className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7" />
+            </svg>
+            Deconnexion
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

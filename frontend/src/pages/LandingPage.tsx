@@ -1,1 +1,391 @@
-aW1wb3J0IFJlYWN0LCB7IHVzZUVmZmVjdCwgdXNlUmVmIH0gZnJvbSAncmVhY3QnOwppbXBvcnQgeyBMaW5rIH0gZnJvbSAncmVhY3Qtcm91dGVyLWRvbSc7CmltcG9ydCBQdWJsaWNOYXZiYXIgZnJvbSAnLi4vY29tcG9uZW50cy9QdWJsaWNOYXZiYXInOwppbXBvcnQgSGVyb09yYiBmcm9tICcuLi9jb21wb25lbnRzLzNkL0hlcm9PcmInOwppbXBvcnQgSGVhcnRiZWF0RUNHIGZyb20gJy4uL2NvbXBvbmVudHMvM2QvSGVhcnRiZWF0RUNHJzsKCi8vIC0tLS0gU2Nyb2xsIHJldmVhbCBob29rIC0tLS0KY29uc3QgdXNlUmV2ZWFsID0gKCkgPT4gewogIGNvbnN0IHJlZiA9IHVzZVJlZjxIVE1MRGl2RWxlbWVudD4obnVsbCk7CiAgdXNlRWZmZWN0KCgpID0+IHsKICAgIGNvbnN0IGVsID0gcmVmLmN1cnJlbnQ7CiAgICBpZiAoIWVsKSByZXR1cm47CiAgICBjb25zdCBvYnMgPSBuZXcgSW50ZXJzZWN0aW9uT2JzZXJ2ZXIoCiAgICAgIChbZW50cnldKSA9PiB7CiAgICAgICAgaWYgKGVudHJ5LmlzSW50ZXJzZWN0aW5nKSB7CiAgICAgICAgICBlbC5jbGFzc0xpc3QuYWRkKCdvcGFjaXR5LTEwMCcsICd0cmFuc2xhdGUteS0wJyk7CiAgICAgICAgICBlbC5jbGFzc0xpc3QucmVtb3ZlKCdvcGFjaXR5LTAnLCAndHJhbnNsYXRlLXktOCcpOwogICAgICAgICAgb2JzLnVub2JzZXJ2ZShlbCk7CiAgICAgICAgfQogICAgICB9LAogICAgICB7IHRocmVzaG9sZDogMC4xNSB9CiAgICApOwogICAgb2JzLm9ic2VydmUoZWwpOwogICAgcmV0dXJuICgpID0+IG9icy5kaXNjb25uZWN0KCk7CiAgfSwgW10pOwogIHJldHVybiByZWY7Cn07Cgpjb25zdCBSZXZlYWw6IFJlYWN0LkZDPHsgY2hpbGRyZW46IFJlYWN0LlJlYWN0Tm9kZTsgY2xhc3NOYW1lPzogc3RyaW5nIH0+ID0gKHsgY2hpbGRyZW4sIGNsYXNzTmFtZSA9ICcnIH0pID0+IHsKICBjb25zdCByZWYgPSB1c2VSZXZlYWwoKTsKICByZXR1cm4gKAogICAgPGRpdiByZWY9e3JlZn0gY2xhc3NOYW1lPXtgb3BhY2l0eS0wIHRyYW5zbGF0ZS15LTggdHJhbnNpdGlvbi1hbGwgZHVyYXRpb24tNzAwIGVhc2Utb3V0ICR7Y2xhc3NOYW1lfWB9PgogICAgICB7Y2hpbGRyZW59CiAgICA8L2Rpdj4KICApOwp9OwoKLy8gLS0tLSBEYXRhIC0tLS0KY29uc3Qgc2VydmljZXMgPSBbCiAgeyBpY29uOiAnXHVEODNEXHVERDJDJywgdGl0bGU6ICdQcmUtY29uc3VsdGF0aW9uIElBJywgZGVzYzogIkRlY3JpdmV6IHZvcyBzeW1wdG9tZXMgZXQgcmVjZXZleiB1bmUgb3JpZW50YXRpb24gbWVkaWNhbGUgaW50ZWxsaWdlbnRlIGF2YW50IHZvdHJlIHJlbmRlei12b3VzLiIsIHRhZzogJ1BvcHVsYWlyZScsIGNvbG9yOiAnYmx1ZScsIGZlYXR1cmVkOiB0cnVlIH0sCiAgeyBpY29uOiAnXHVEODNEXHVEQ0M1JywgdGl0bGU6ICdQcmlzZSBkZSByZW5kZXotdm91cycsIGRlc2M6ICJSZXNlcnZleiBlbiBsaWduZSBlbiBxdWVscXVlcyBjbGljcyBhdmVjIGxlIHNwZWNpYWxpc3RlIGRlIHZvdHJlIGNob2l4LCBzZWxvbiBzZXMgZGlzcG9uaWJpbGl0ZXMuIiwgY29sb3I6ICdjeWFuJyB9LAogIHsgaWNvbjogJ1x1RDgzRFx1RENDQScsIHRpdGxlOiAnU3VpdmkgbWVkaWNhbCcsIGRlc2M6ICJIaXN0b3JpcXVlIGNvbXBsZXQsIHJlc3VsdGF0cyBkJ2FuYWx5c2VzLCBvcmRvbm5hbmNlcyBldCByYXBwZWxzIGRlIHRyYWl0ZW1lbnQgZW4gdW4gc2V1bCBlbmRyb2l0LiIsIGNvbG9yOiAnZ3JlZW4nIH0sCiAgeyBpY29uOiAnXHVEODNEXHVEQ0FDJywgdGl0bGU6ICdNZXNzYWdlcmllIHNlY3VyaXNlZScsIGRlc2M6ICJFY2hhbmdleiBkaXJlY3RlbWVudCBhdmVjIHZvdHJlIG1lZGVjaW4gdHJhaXRhbnQgdmlhIG5vdHJlIG1lc3NhZ2VyaWUgY2hpZmZyZWUgZGUgYm91dCBlbiBib3V0LiIsIGNvbG9yOiAncHVycGxlJyB9LAogIHsgaWNvbjogJ1x1RDgzRFx1RENDMicsIHRpdGxlOiAnRG9zc2llciBwYXRpZW50JywgZGVzYzogIkFjY2VkZXogYSB2b3RyZSBkb3NzaWVyIG1lZGljYWwgY29tcGxldCwgcGFydGFnZXotbGUgZW4gdG91dGUgc2VjdXJpdGUgYXZlYyB2b3MgcHJhdGljaWVucy4iLCBjb2xvcjogJ2JsdWUnIH0sCiAgeyBpY29uOiAnXHVEODNEXHVERDEyJywgdGl0bGU6ICdTZWN1cml0ZSAmIGNvbmZpZGVudGlhbGl0ZScsIGRlc2M6ICJWb3MgZG9ubmVlcyBzb250IGNoaWZmcmVlcyBldCBoZWJlcmdlZXMgc3VyIGRlcyBzZXJ2ZXVycyBjZXJ0aWZpZXMgSERTIGNvbmZvcm1lcyBSR1BELiIsIGNvbG9yOiAnY3lhbicgfSwKXTsKCmNvbnN0IHRlYW0gPSBbCiAgeyBpbml0aWFsczogJ0ROJywgbmFtZTogJ0RyLiBOZGlheWUnLCByb2xlOiAnTWVkZWNpbmUgZ2VuZXJhbGUnLCBkaXNwbzogIkRpc3BvbmlibGUgYXVqb3VyZCdodWkiLCB2YXJpYW50OiAnZnJvbS1wcmltYXJ5LTUwMCB0by1wcmltYXJ5LTcwMCcgfSwKICB7IGluaXRpYWxzOiAnU0YnLCBuYW1lOiAnRHIuIFNvdy1GYWxsJywgcm9sZTogJ0NhcmRpb2xvZ2llJywgZGlzcG86ICdEaXNwb25pYmxlIGRlbWFpbicsIHZhcmlhbnQ6ICdmcm9tLXNreS01MDAgdG8tc2t5LTcwMCcgfSwKICB7IGluaXRpYWxzOiAnQUQnLCBuYW1lOiAnRHIuIEFpc3NhdG91IERpb3AnLCByb2xlOiAnRGVybWF0b2xvZ2llJywgZGlzcG86ICJEaXNwb25pYmxlIGF1am91cmQnaHVpIiwgdmFyaWFudDogJ2Zyb20tcHVycGxlLTUwMCB0by1wdXJwbGUtNzAwJyB9LAogIHsgaW5pdGlhbHM6ICdNQicsIG5hbWU6ICdEci4gTW91c3NhIEJhJywgcm9sZTogJ1BlZGlhdHJpZScsIGRpc3BvOiAnUHJvY2hhaW5lIGRpc3BvIDogTHVuZGknLCB2YXJpYW50OiAnZnJvbS1hbWJlci01MDAgdG8tYW1iZXItNzAwJyB9LApdOwoKY29uc3Qgc3RlcHMgPSBbCiAgeyBudW06ICcxJywgdGl0bGU6ICdEZWNyaXZleiB2b3Mgc3ltcHRvbWVzJywgZGVzYzogIlJlbXBsaXNzZXogbm90cmUgZm9ybXVsYWlyZSBkZSBwcmUtY29uc3VsdGF0aW9uIGludGVsbGlnZW50IGd1aWRlIHBhciBsJ0lBLiIgfSwKICB7IG51bTogJzInLCB0aXRsZTogJ1JlY2V2ZXogdW5lIGFuYWx5c2UgSUEnLCBkZXNjOiAiTm90cmUgYWxnb3JpdGhtZSBhbmFseXNlIHZvcyBzeW1wdG9tZXMgZXQgdm91cyBvcmllbnRlIHZlcnMgbGUgYm9uIHNwZWNpYWxpc3RlLiIgfSwKICB7IG51bTogJzMnLCB0aXRsZTogJ0Nob2lzaXNzZXogdW4gcHJhdGljaWVuJywgZGVzYzogIlNlbGVjdGlvbm5leiBwYXJtaSBsZXMgbWVkZWNpbnMgcmVjb21tYW5kZXMgc2Vsb24gbGV1cnMgc3BlY2lhbGl0ZXMgZXQgZGlzcG9uaWJpbGl0ZXMuIiB9LAogIHsgbnVtOiAnNCcsIHRpdGxlOiAnQ29uc3VsdGV6IGVuIGxpZ25lIG91IHN1ciBwbGFjZScsIGRlc2M6ICJSZWpvaWduZXogdm90cmUgY29uc3VsdGF0aW9uIHBhciB2aWRlbyBvdSByZW5kZXotdm91cyBhdSBjYWJpbmV0IHNlbG9uIHZvdHJlIHByZWZlcmVuY2UuIiB9LApdOwoKLy8gLS0tLSBDb2xvciBoZWxwZXJzIC0tLS0KY29uc3QgY29sb3JNYXAgPSAoYzogc3RyaW5nKSA9PiB7CiAgc3dpdGNoIChjKSB7CiAgICBjYXNlICdibHVlJzogcmV0dXJuIHsgYmc6ICdiZy1wcmltYXJ5LTUwMC8xMCcsIHJpbmc6ICdyaW5nLXByaW1hcnktNTAwLzIwJywgdGV4dDogJ3RleHQtcHJpbWFyeS00MDAnIH07CiAgICBjYXNlICdjeWFuJzogcmV0dXJuIHsgYmc6ICdiZy1za3ktNTAwLzEwJywgcmluZzogJ3Jpbmctc2t5LTUwMC8yMCcsIHRleHQ6ICd0ZXh0LXNreS00MDAnIH07CiAgICBjYXNlICdncmVlbic6IHJldHVybiB7IGJnOiAnYmctZW1lcmFsZC01MDAvMTAnLCByaW5nOiAncmluZy1lbWVyYWxkLTUwMC8yMCcsIHRleHQ6ICd0ZXh0LWVtZXJhbGQtNDAwJyB9OwogICAgY2FzZSAncHVycGxlJzogcmV0dXJuIHsgYmc6ICdiZy1wdXJwbGUtNTAwLzEwJywgcmluZzogJ3JpbmctcHVycGxlLTUwMC8yMCcsIHRleHQ6ICd0ZXh0LXB1cnBsZS00MDAnIH07CiAgICBkZWZhdWx0OiByZXR1cm4geyBiZzogJ2JnLXdoaXRlLzUnLCByaW5nOiAncmluZy13aGl0ZS8xMCcsIHRleHQ6ICd0ZXh0LXdoaXRlJyB9OwogIH0KfTsKCi8vIC0tLS0gQ29tcG9uZW50IC0tLS0KY29uc3QgTGFuZGluZ1BhZ2U6IFJlYWN0LkZDID0gKCkgPT4gewogIHJldHVybiAoCiAgICA8ZGl2IGNsYXNzTmFtZT0ibWluLWgtc2NyZWVuIGJnLWdyYXktOTUwIHRleHQtd2hpdGUgb3ZlcmZsb3cteC1oaWRkZW4iPgogICAgICA8UHVibGljTmF2YmFyIC8+CgogICAgICB7LyogPT09PT09PT0gSEVSTyA9PT09PT09PSAqL30KICAgICAgPHNlY3Rpb24gY2xhc3NOYW1lPSJyZWxhdGl2ZSBtaW4taC1bOTB2aF0gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgcHQtMjAiPgogICAgICAgIHsvKiBiYWNrZ3JvdW5kIGdyYWRpZW50cyAqL30KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0iYWJzb2x1dGUgaW5zZXQtMCBiZy1ncmFkaWVudC1yYWRpYWwgZnJvbS1wcmltYXJ5LTkwMC8yMCB2aWEtdHJhbnNwYXJlbnQgdG8tdHJhbnNwYXJlbnQiIC8+CiAgICAgICAgPGRpdiBjbGFzc05hbWU9ImFic29sdXRlIHRvcC0xLzQgLXJpZ2h0LTIwIHctOTYgaC05NiBiZy1wcmltYXJ5LTUwMC8xMCByb3VuZGVkLWZ1bGwgYmx1ci1bMTI4cHhdIiAvPgogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJhYnNvbHV0ZSBib3R0b20tMS80IC1sZWZ0LTIwIHctNzIgaC03MiBiZy1za3ktNTAwLzEwIHJvdW5kZWQtZnVsbCBibHVyLVsxMjhweF0iIC8+CgogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJyZWxhdGl2ZSB6LTEwIG1heC13LTd4bCBteC1hdXRvIHB4LTYgdGV4dC1jZW50ZXIiPgogICAgICAgICAgey8qIE9yYiAqL30KICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJmbGV4IGp1c3RpZnktY2VudGVyIG1iLTgiPgogICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0idy00MCBoLTQwIHNtOnctNTIgc206aC01MiI+PEhlcm9PcmIgLz48L2Rpdj4KICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT0iaW5saW5lLWJsb2NrIHB4LTQgcHktMS41IHJvdW5kZWQtZnVsbCBiZy1wcmltYXJ5LTUwMC8xMCByaW5nLTEgcmluZy1wcmltYXJ5LTUwMC8yMCB0ZXh0LXByaW1hcnktMzAwIHRleHQtc20gZm9udC1tZWRpdW0gbWItNiI+CiAgICAgICAgICAgIFBsYXRlZm9ybWUgZGUgc2FudGUgaW50ZWxsaWdlbnRlIHBvdXIgbGUgU2VuZWdhbAogICAgICAgICAgPC9zcGFuPgoKICAgICAgICAgIDxoMSBjbGFzc05hbWU9InRleHQtNHhsIHNtOnRleHQtNnhsIGxnOnRleHQtN3hsIGZvbnQtYm9sZCBsZWFkaW5nLXRpZ2h0IG1iLTYiPgogICAgICAgICAgICBWb3RyZSBzYW50ZSwgbm90cmUgcHJpb3JpdGU8YnIgLz4KICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPSJ0ZXh0LXRyYW5zcGFyZW50IGJnLWNsaXAtdGV4dCBiZy1ncmFkaWVudC10by1yIGZyb20tcHJpbWFyeS00MDAgdG8tc2t5LTQwMCI+CiAgICAgICAgICAgICAgbnVtZXJpcXVlCiAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgIDwvaDE+CgogICAgICAgICAgPHAgY2xhc3NOYW1lPSJ0ZXh0LWxnIHNtOnRleHQteGwgdGV4dC1ncmF5LTQwMCBtYXgtdy0yeGwgbXgtYXV0byBtYi0xMCI+CiAgICAgICAgICAgIFByZS1jb25zdWx0YXRpb24gSUEsIHByaXNlIGRlIHJlbmRlei12b3VzIGVuIGxpZ25lLCBzdWl2aSBtZWRpY2FsIGNvbXBsZXQgOgogICAgICAgICAgICBTYW50ZWlhIHNpbXBsaWZpZSBsJ2FjY2VzIGF1eCBzb2lucyBhdSBTZW5lZ2FsLgogICAgICAgICAgPC9wPgoKICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJmbGV4IGZsZXgtY29sIHNtOmZsZXgtcm93IGdhcC00IGp1c3RpZnktY2VudGVyIj4KICAgICAgICAgICAgPExpbmsgdG89Ii9yZWdpc3RlciIgY2xhc3NOYW1lPSJweC04IHB5LTMuNSByb3VuZGVkLTJ4bCBmb250LXNlbWlib2xkIGJnLWdyYWRpZW50LXRvLXIgZnJvbS1wcmltYXJ5LTUwMCB0by1wcmltYXJ5LTYwMCBob3Zlcjpmcm9tLXByaW1hcnktNDAwIGhvdmVyOnRvLXByaW1hcnktNTAwIHRyYW5zaXRpb24gc2hhZG93LWxnIHNoYWRvdy1wcmltYXJ5LTUwMC8yNSI+CiAgICAgICAgICAgICAgQ29tbWVuY2VyIGdyYXR1aXRlbWVudAogICAgICAgICAgICA8L0xpbms+CiAgICAgICAgICAgIDxMaW5rIHRvPSIvbG9naW4iIGNsYXNzTmFtZT0icHgtOCBweS0zLjUgcm91bmRlZC0yeGwgZm9udC1zZW1pYm9sZCByaW5nLTEgcmluZy13aGl0ZS8xMCBob3ZlcjpiZy13aGl0ZS81IHRyYW5zaXRpb24iPgogICAgICAgICAgICAgIFNlIGNvbm5lY3RlcgogICAgICAgICAgICA8L0xpbms+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICA8L2Rpdj4KCiAgICAgICAgey8qIEhlYXJ0YmVhdCBkaXZpZGVyICovfQogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJhYnNvbHV0ZSBib3R0b20tMCBsZWZ0LTAgdy1mdWxsIGgtMjQgb3BhY2l0eS0zMCI+CiAgICAgICAgICA8SGVhcnRiZWF0RUNHIC8+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvc2VjdGlvbj4KCiAgICAgIHsvKiA9PT09PT09PSBTRVJWSUNFU19HUklEID09PT09PT09ICovfQogICAgICA8c2VjdGlvbiBjbGFzc05hbWU9InJlbGF0aXZlIHB5LTI4IHB4LTYiPgogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJtYXgtdy03eGwgbXgtYXV0byI+CiAgICAgICAgICA8UmV2ZWFsPgogICAgICAgICAgICA8aDIgY2xhc3NOYW1lPSJ0ZXh0LTN4bCBzbTp0ZXh0LTR4bCBmb250LWJvbGQgdGV4dC1jZW50ZXIgbWItNCI+VG91dCBjZSBkb250IHZvdXMgYXZleiBiZXNvaW48L2gyPgogICAgICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtZ3JheS00MDAgdGV4dC1jZW50ZXIgbWF4LXcteGwgbXgtYXV0byBtYi0xNiI+CiAgICAgICAgICAgICAgVW5lIHN1aXRlIGNvbXBsZXRlIGQnb3V0aWxzIG1lZGljYXV4IG51bWVyaXF1ZXMgcG91ciB1bmUgcHJpc2UgZW4gY2hhcmdlIG9wdGltYWxlLgogICAgICAgICAgICA8L3A+CiAgICAgICAgICA8L1JldmVhbD4KCiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0iZ3JpZCBzbTpncmlkLWNvbHMtMiBsZzpncmlkLWNvbHMtMyBnYXAtNiI+CiAgICAgICAgICAgIHtzZXJ2aWNlcy5tYXAoKHMsIGkpID0+IHsKICAgICAgICAgICAgICBjb25zdCBjID0gY29sb3JNYXAocy5jb2xvcik7CiAgICAgICAgICAgICAgcmV0dXJuICgKICAgICAgICAgICAgICAgIDxSZXZlYWwga2V5PXtpfT4KICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9e2Bncm91cCByZWxhdGl2ZSByb3VuZGVkLTN4bCBiZy13aGl0ZS81IGJhY2tkcm9wLWJsdXItbWQgcmluZy0xICR7Yy5yaW5nfSBwLTggaG92ZXI6c2NhbGUtWzEuMDJdIHRyYW5zaXRpb24tYWxsIGR1cmF0aW9uLTMwMCBvdmVyZmxvdy1oaWRkZW5gfT4KICAgICAgICAgICAgICAgICAgICB7cy5mZWF0dXJlZCAmJiAoCiAgICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9ImFic29sdXRlIHRvcC00IHJpZ2h0LTQgdGV4dC14cyBweC0yLjUgcHktMSByb3VuZGVkLWZ1bGwgYmctcHJpbWFyeS01MDAvMjAgdGV4dC1wcmltYXJ5LTMwMCByaW5nLTEgcmluZy1wcmltYXJ5LTUwMC8zMCI+CiAgICAgICAgICAgICAgICAgICAgICAgIHtzLnRhZ30KICAgICAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgICApfQogICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgdy0xNCBoLTE0IHJvdW5kZWQtMnhsICR7Yy5iZ30gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgdGV4dC0zeGwgbWItNiBncm91cC1ob3ZlcjpzY2FsZS0xMTAgdHJhbnNpdGlvbmB9PgogICAgICAgICAgICAgICAgICAgICAge3MuaWNvbn0KICAgICAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgICAgICA8aDMgY2xhc3NOYW1lPSJmb250LXNlbWlib2xkIHRleHQtbGcgbWItMiI+e3MudGl0bGV9PC9oMz4KICAgICAgICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtc20gdGV4dC1ncmF5LTQwMCBsZWFkaW5nLXJlbGF4ZWQiPntzLmRlc2N9PC9wPgogICAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgIDwvUmV2ZWFsPgogICAgICAgICAgICAgICk7CiAgICAgICAgICAgIH0pfQogICAgICAgICAgPC9kaXY+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvc2VjdGlvbj4KCiAgICAgIHsvKiA9PT09PT09PSBTVEVQU19IT1dfSVRfV09SS1MgPT09PT09PT0gKi99CiAgICAgIDxzZWN0aW9uIGNsYXNzTmFtZT0icmVsYXRpdmUgcHktMjggcHgtNiBiZy1ncmFkaWVudC10by1iIGZyb20tZ3JheS05NTAgdmlhLWdyYXktOTAwIHRvLWdyYXktOTUwIj4KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ibWF4LXctNXhsIG14LWF1dG8iPgogICAgICAgICAgPFJldmVhbD4KICAgICAgICAgICAgPGgyIGNsYXNzTmFtZT0idGV4dC0zeGwgc206dGV4dC00eGwgZm9udC1ib2xkIHRleHQtY2VudGVyIG1iLTQiPkNvbW1lbnQgY2EgbWFyY2hlID88L2gyPgogICAgICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtZ3JheS00MDAgdGV4dC1jZW50ZXIgbWF4LXcteGwgbXgtYXV0byBtYi0xNiI+CiAgICAgICAgICAgICAgUXVhdHJlIGV0YXBlcyBzaW1wbGVzIHBvdXIgdW5lIHByaXNlIGVuIGNoYXJnZSByYXBpZGUgZXQgcGVyc29ubmFsaXNlZS4KICAgICAgICAgICAgPC9wPgogICAgICAgICAgPC9SZXZlYWw+CgogICAgICAgICAgPGRpdiBjbGFzc05hbWU9InJlbGF0aXZlIj4KICAgICAgICAgICAgey8qIHZlcnRpY2FsIGxpbmUgKi99CiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJhYnNvbHV0ZSBsZWZ0LTYgdG9wLTAgaC1mdWxsIHctcHggYmctZ3JhZGllbnQtdG8tYiBmcm9tLXByaW1hcnktNTAwLzQwIHRvLXRyYW5zcGFyZW50IGhpZGRlbiBsZzpibG9jayIgLz4KICAgICAgICAgICAge3N0ZXBzLm1hcCgocywgaSkgPT4gKAogICAgICAgICAgICAgIDxSZXZlYWwga2V5PXtpfSBjbGFzc05hbWU9Im1iLTEyIGZsZXggaXRlbXMtc3RhcnQgZ2FwLTYiPgogICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9ImZsZXgtc2hyaW5rLTAgdy0xMiBoLTEyIHJvdW5kZWQtMnhsIGJnLXByaW1hcnktNTAwLzIwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIGZvbnQtYm9sZCB0ZXh0LXByaW1hcnktNDAwIHRleHQtbGciPgogICAgICAgICAgICAgICAgICB7cy5udW19CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgICAgICAgIDxoMyBjbGFzc05hbWU9ImZvbnQtc2VtaWJvbGQgdGV4dC1sZyBtYi0xIj57cy50aXRsZX08L2gzPgogICAgICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtZ3JheS00MDAgdGV4dC1zbSI+e3MuZGVzY308L3A+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICA8L1JldmVhbD4KICAgICAgICAgICAgKSl9CiAgICAgICAgICA8L2Rpdj4KICAgICAgICA8L2Rpdj4KICAgICAgPC9zZWN0aW9uPgoKICAgICAgey8qID09PT09PT09IFRFQU0gPT09PT09PT0gKi99CiAgICAgIDxzZWN0aW9uIGNsYXNzTmFtZT0icHktMjggcHgtNiI+CiAgICAgICAgPGRpdiBjbGFzc05hbWU9Im1heC13LTd4bCBteC1hdXRvIj4KICAgICAgICAgIDxSZXZlYWw+CiAgICAgICAgICAgIDxoMiBjbGFzc05hbWU9InRleHQtM3hsIHNtOnRleHQtNHhsIGZvbnQtYm9sZCB0ZXh0LWNlbnRlciBtYi00Ij5Ob3MgcHJhdGljaWVucyBkZSBjb25maWFuY2U8L2gyPgogICAgICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtZ3JheS00MDAgdGV4dC1jZW50ZXIgbWF4LXcteGwgbXgtYXV0byBtYi0xNiI+CiAgICAgICAgICAgICAgVW5lIGVxdWlwZSBkZSBtZWRlY2lucyBjZXJ0aWZpZXMgZXQgZXhwZXJpbWVudGVzIGEgdm90cmUgc2VydmljZS4KICAgICAgICAgICAgPC9wPgogICAgICAgICAgPC9SZXZlYWw+CgogICAgICAgICAgPGRpdiBjbGFzc05hbWU9ImdyaWQgc206Z3JpZC1jb2xzLTIgbGc6Z3JpZC1jb2xzLTQgZ2FwLTYiPgogICAgICAgICAgICB7dGVhbS5tYXAoKHQsIGkpID0+ICgKICAgICAgICAgICAgICA8UmV2ZWFsIGtleT17aX0+CiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0icm91bmRlZC0zeGwgYmctd2hpdGUvNSByaW5nLTEgcmluZy13aGl0ZS8xMCBwLTggdGV4dC1jZW50ZXIgaG92ZXI6Ymctd2hpdGUvMTAgdHJhbnNpdGlvbiI+CiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPXtgdy0xNiBoLTE2IG14LWF1dG8gcm91bmRlZC0yeGwgYmctZ3JhZGllbnQtdG8tYnIgJHt0LnZhcmlhbnR9IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRleHQtMnhsIGZvbnQtYm9sZCBtYi00YH0+CiAgICAgICAgICAgICAgICAgICAge3QuaW5pdGlhbHN9CiAgICAgICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgICAgICA8aDMgY2xhc3NOYW1lPSJmb250LXNlbWlib2xkIG1iLTEiPnt0Lm5hbWV9PC9oMz4KICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPSJ0ZXh0LXNtIHRleHQtZ3JheS00MDAgbWItMyI+e3Qucm9sZX08L3A+CiAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT0iaW5saW5lLWJsb2NrIHRleHQteHMgcHgtMyBweS0xIHJvdW5kZWQtZnVsbCBiZy1lbWVyYWxkLTUwMC8xMCB0ZXh0LWVtZXJhbGQtNDAwIj57dC5kaXNwb308L3NwYW4+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgICA8L1JldmVhbD4KICAgICAgICAgICAgKSl9CiAgICAgICAgICA8L2Rpdj4KICAgICAgICA8L2Rpdj4KICAgICAgPC9zZWN0aW9uPgoKICAgICAgey8qID09PT09PT09IENUQSBGb290ZXIgPT09PT09PT0gKi99CiAgICAgIDxzZWN0aW9uIGNsYXNzTmFtZT0icHktMjggcHgtNiI+CiAgICAgICAgPFJldmVhbD4KICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPSJtYXgtdy00eGwgbXgtYXV0byB0ZXh0LWNlbnRlciBwLTEyIHJvdW5kZWQtM3hsIGJnLWdyYWRpZW50LXRvLWJyIGZyb20tcHJpbWFyeS05MDAvNDAgdG8tZ3JheS05MDAvNjAgcmluZy0xIHJpbmctcHJpbWFyeS01MDAvMjAiPgogICAgICAgICAgICA8aDIgY2xhc3NOYW1lPSJ0ZXh0LTN4bCBzbTp0ZXh0LTR4bCBmb250LWJvbGQgbWItNCI+UHJldCBhIHByZW5kcmUgc29pbiBkZSB2b3VzID88L2gyPgogICAgICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtZ3JheS00MDAgbWItOCI+CiAgICAgICAgICAgICAgUmVqb2lnbmV6IGRlcyBtaWxsaWVycyBkZSBwYXRpZW50cyBxdWkgZm9udCBjb25maWFuY2UgYSBTYW50ZWlhIHBvdXIgbGV1ciBzdWl2aSBtZWRpY2FsIHF1b3RpZGllbi4KICAgICAgICAgICAgPC9wPgogICAgICAgICAgICA8TGluayB0bz0iL3JlZ2lzdGVyIiBjbGFzc05hbWU9ImlubGluZS1ibG9jayBweC0xMCBweS00IHJvdW5kZWQtMnhsIGZvbnQtc2VtaWJvbGQgYmctZ3JhZGllbnQtdG8tciBmcm9tLXByaW1hcnktNTAwIHRvLXByaW1hcnktNjAwIGhvdmVyOmZyb20tcHJpbWFyeS00MDAgaG92ZXI6dG8tcHJpbWFyeS01MDAgdHJhbnNpdGlvbiBzaGFkb3ctbGcgc2hhZG93LXByaW1hcnktNTAwLzI1Ij4KICAgICAgICAgICAgICBDcmVlciB2b3RyZSBjb21wdGUgZ3JhdHVpdGVtZW50CiAgICAgICAgICAgIDwvTGluaz4KICAgICAgICAgIDwvZGl2PgogICAgICAgIDwvUmV2ZWFsPgogICAgICA8L3NlY3Rpb24+CgogICAgICB7LyogPT09PT09PT0gRk9PVEVSID09PT09PT09ICovfQogICAgICA8Zm9vdGVyIGNsYXNzTmFtZT0iYm9yZGVyLXQgYm9yZGVyLXdoaXRlLzEwIHB5LTEyIHB4LTYiPgogICAgICAgIDxkaXYgY2xhc3NOYW1lPSJtYXgtdy03eGwgbXgtYXV0byBmbGV4IGZsZXgtY29sIHNtOmZsZXgtcm93IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4gZ2FwLTQiPgogICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPSJmb250LWJvbGQgdGV4dC1sZyI+U2FudGVpYTwvc3Bhbj4KICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT0idGV4dC1zbSB0ZXh0LWdyYXktNTAwIj4mY29weTsgMjAyNSBTYW50ZWlhIC0gVG91cyBkcm9pdHMgcmVzZXJ2ZXM8L3NwYW4+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZm9vdGVyPgogICAgPC9kaXY+CiAgKTsKfTsKCmV4cG9ydCBkZWZhdWx0IExhbmRpbmdQYWdlOwo=
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import PublicNavbar from '../components/PublicNavbar';
+import HeroOrb from '../components/3d/HeroOrb';
+import HeartbeatECG from '../components/3d/HeartbeatECG';
+
+// ---- Scroll reveal hook ----
+const useReveal = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.classList.add('opacity-100', 'translate-y-0');
+          el.classList.remove('opacity-0', 'translate-y-8');
+          obs.unobserve(el);
+        }
+      },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return ref;
+};
+
+const Reveal: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
+  const ref = useReveal();
+  return (
+    <div ref={ref} className={`opacity-0 translate-y-8 transition-all duration-700 ease-out ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+// ---- Data ----
+const services = [
+  { title: 'Pré-consultation IA', desc: "Décrivez vos symptômes et recevez une orientation médicale intelligente avant votre rendez-vous.", tag: 'Populaire', color: 'blue', featured: true },
+  { title: 'Prise de rendez-vous', desc: "Réservez en ligne en quelques clics avec le spécialiste de votre choix, selon ses disponibilités.", color: 'cyan' },
+  { title: 'Suivi médical', desc: "Historique complet, résultats d'analyses, ordonnances et rappels de traitement en un seul endroit.", color: 'green' },
+  { title: 'Messagerie sécurisée', desc: "Échangez directement avec votre médecin traitant via notre messagerie chiffrée de bout en bout.", color: 'purple' },
+  { title: 'Dossier patient', desc: "Accédez à votre dossier médical complet, partagez-le en toute sécurité avec vos praticiens.", color: 'blue' },
+  { title: 'Sécurité & confidentialité', desc: "Vos données sont chiffrées et hébergées sur des serveurs certifiés HDS conformes RGPD.", color: 'cyan' },
+];
+
+const team = [
+  { initials: 'DN', name: 'Dr. Ndiaye', role: 'Médecine générale', dispo: "Disponible aujourd'hui", variant: 'from-primary-500 to-primary-700' },
+  { initials: 'SF', name: 'Dr. Sow-Fall', role: 'Cardiologie', dispo: 'Disponible demain', variant: 'from-sky-500 to-sky-700' },
+  { initials: 'AD', name: 'Dr. Aissatou Diop', role: 'Dermatologie', dispo: "Disponible aujourd'hui", variant: 'from-purple-500 to-purple-700' },
+  { initials: 'MB', name: 'Dr. Moussa Ba', role: 'Pédiatrie', dispo: 'Prochaine dispo : Lundi', variant: 'from-amber-500 to-amber-700' },
+];
+
+const steps = [
+  { num: '1', title: 'Décrivez vos symptômes', desc: "Remplissez notre formulaire de pré-consultation intelligent guidé par l'IA." },
+  { num: '2', title: 'Choisissez votre spécialiste', desc: "L'IA vous oriente vers le bon praticien. Réservez le créneau qui vous convient." },
+  { num: '3', title: 'Consultez & suivez', desc: 'Consultation en ligne ou en clinique, puis suivi personnalisé depuis votre espace.' },
+];
+
+const testimonials = [
+  { stars: 5, quote: "La pré-consultation m'a fait gagner un temps précieux. Le médecin avait déjà toutes les infos à mon arrivée.", name: 'Aminata S.', since: 'Patiente depuis 2024' },
+  { stars: 5, quote: "Interface claire et rapide. J'ai pu prendre un rendez-vous en cardiologie en moins de 2 minutes.", name: 'Ibrahima D.', since: 'Patient depuis 2023' },
+  { stars: 4, quote: "Le suivi après ma consultation était impeccable. Rappels de médicaments, résultats en ligne... tout y est.", name: 'Fatou M.', since: 'Patiente depuis 2024' },
+  { stars: 5, quote: "L'expérience utilisateur est remarquable. Tout est fluide, du premier clic jusqu'au compte-rendu final.", name: 'Ousmane K.', since: 'Patient depuis 2024' },
+  { stars: 5, quote: "Grâce à MediConsult, j'ai enfin trouvé un dermatologue disponible rapidement. Service exceptionnel.", name: 'Mariama B.', since: 'Patiente depuis 2023' },
+];
+
+// SVG icons for services (replacing emoji)
+const serviceIcons: Record<string, React.ReactNode> = {
+  'Pré-consultation IA': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714a2.25 2.25 0 00.659 1.591L19 14.5M14.25 3.104c.251.023.501.05.75.082M19 14.5l-2.47 2.47a2.25 2.25 0 01-1.59.659H9.06a2.25 2.25 0 01-1.591-.659L5 14.5m14 0V5.846a2.25 2.25 0 00-1.35-2.064A48.11 48.11 0 0012 3c-2.392 0-4.744.175-7.043.513A2.25 2.25 0 003.5 5.846V14.5" /></svg>
+  ),
+  'Prise de rendez-vous': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+  ),
+  'Suivi médical': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+  ),
+  'Messagerie sécurisée': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+  ),
+  'Dossier patient': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>
+  ),
+  'Sécurité & confidentialité': (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+  ),
+};
+
+const iconColors: Record<string, string> = {
+  blue: 'bg-primary-100 text-primary-600',
+  cyan: 'bg-sky-100 text-sky-700',
+  green: 'bg-green-100 text-green-600',
+  purple: 'bg-purple-100 text-purple-600',
+};
+
+// ---- Testimonial Carousel Hook ----
+const useCarousel = (total: number, interval = 5000) => {
+  const [current, setCurrent] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const start = useCallback(() => {
+    timerRef.current = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % total);
+    }, interval);
+  }, [total, interval]);
+
+  const stop = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  }, []);
+
+  useEffect(() => {
+    start();
+    return stop;
+  }, [start, stop]);
+
+  const goTo = useCallback((idx: number) => {
+    stop();
+    setCurrent(idx);
+    start();
+  }, [stop, start]);
+
+  return { current, goTo };
+};
+
+// ---- Component ----
+const LandingPage: React.FC = () => {
+  const { current: activeTestimonial, goTo: goToTestimonial } = useCarousel(testimonials.length, 5000);
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans antialiased overflow-x-hidden">
+      <PublicNavbar />
+
+      {/* ========== HERO ========== */}
+      <section className="relative min-h-screen flex items-center px-4 sm:px-6 md:px-12 pt-28 pb-20 bg-gradient-to-br from-primary-50 via-gray-50 to-sky-50 overflow-hidden">
+        <div className="max-w-xl relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-600/5 border border-primary-600/10 rounded-full text-xs font-medium text-primary-600 mb-7">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+            Plateforme médicale nouvelle génération
+          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight mb-5">
+            Votre santé,<br />notre <span className="text-primary-600">priorité</span>
+          </h1>
+          <p className="text-base sm:text-lg text-gray-600 max-w-md leading-relaxed mb-9">
+            Consultez nos spécialistes en ligne ou en clinique. Pré-consultation intelligente,
+            prise de rendez-vous instantanée, suivi médical personnalisé.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/app/appointments/new"
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary-600/30 inline-flex items-center gap-2"
+            >
+              Prendre rendez-vous &rarr;
+            </Link>
+            <Link
+              to="/app/preconsultation"
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-white border border-gray-200 hover:border-gray-300 text-gray-900 text-sm font-semibold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md inline-flex items-center gap-2"
+            >
+              Pré-consultation IA
+            </Link>
+          </div>
+        </div>
+        {/* Hero 3D orb – full-screen animated background on mobile, positioned right on desktop */}
+        <div className="absolute inset-0 pointer-events-none z-0 opacity-30 md:inset-auto md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-1/2 md:h-[90%] md:opacity-100">
+          <HeroOrb />
+        </div>
+      </section>
+
+      {/* ========== STATS GLASS CARDS ========== */}
+      <section className="relative -mt-20 z-10 flex justify-center px-4 sm:px-6">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-4 sm:gap-6">
+          {[
+            { num: '12k+', label: 'Patients suivis' },
+            { num: '35', label: 'Spécialistes' },
+            { num: '98%', label: 'Satisfaction' },
+            { num: '15', label: 'Spécialités' },
+          ].map((s) => (
+            <Reveal key={s.label}>
+              <div className="bg-white/60 backdrop-blur-xl border border-white/50 rounded-2xl px-5 sm:px-7 py-6 sm:py-8 min-w-0 sm:min-w-[160px] text-center shadow-sm hover:-translate-y-1 hover:shadow-lg hover:shadow-primary-600/10 hover:bg-white/75 transition-all">
+                <div className="text-2xl sm:text-3xl font-extrabold text-primary-600 tracking-tight">{s.num}</div>
+                <div className="text-xs text-gray-500 mt-1.5 font-medium">{s.label}</div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ========== SERVICES ========== */}
+      <section id="services" className="py-16 sm:py-24 px-4 sm:px-6 md:px-12 bg-white">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="text-xs font-semibold uppercase tracking-widest text-primary-600 mb-2">Nos services</div>
+          <Reveal><h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">Tout pour votre parcours de soin</h2></Reveal>
+          <Reveal><p className="text-gray-500 mt-3 max-w-lg mx-auto leading-relaxed text-sm sm:text-base">De la pré-consultation au suivi post-traitement, notre plateforme couvre chaque étape de votre expérience de santé.</p></Reveal>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto">
+          {services.map((s) => (
+            <Reveal key={s.title}>
+              <div className={`rounded-2xl border p-6 sm:p-8 transition-all hover:-translate-y-1 hover:shadow-lg hover:border-primary-600/20 ${
+                s.featured ? 'border-primary-600/20 bg-gradient-to-br from-primary-50 to-gray-50' : 'border-gray-200 bg-gray-50'
+              }`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${iconColors[s.color]}`}>
+                  {serviceIcons[s.title]}
+                </div>
+                <h3 className="text-lg font-bold tracking-tight mb-2">{s.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+                {s.tag && (
+                  <span className="inline-block mt-3 px-3 py-1 bg-primary-600/10 rounded-full text-[0.7rem] font-semibold text-primary-600 uppercase tracking-wide">
+                    {s.tag}
+                  </span>
+                )}
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ========== ECG NEON TRANSITION ========== */}
+      <HeartbeatECG />
+
+      {/* ========== EQUIPE ========== */}
+      <section id="equipe" className="py-16 sm:py-24 px-4 sm:px-6 md:px-12 bg-gray-50">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="text-xs font-semibold uppercase tracking-widest text-primary-600 mb-2">Notre équipe</div>
+          <Reveal><h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">Des spécialistes à votre écoute</h2></Reveal>
+          <Reveal><p className="text-gray-500 mt-3 max-w-lg mx-auto text-sm sm:text-base">Une équipe pluridisciplinaire dédiée à votre bien-être.</p></Reveal>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
+          {team.map((t) => (
+            <Reveal key={t.name}>
+              <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-8 text-center transition-all hover:-translate-y-1 hover:shadow-lg hover:border-primary-600/15">
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br ${t.variant} mx-auto mb-3 sm:mb-4 flex items-center justify-center text-white text-xl sm:text-2xl font-bold`}>
+                  {t.initials}
+                </div>
+                <h4 className="font-bold tracking-tight mb-1 text-sm sm:text-base">{t.name}</h4>
+                <div className="text-xs sm:text-sm text-primary-600 font-medium mb-2">{t.role}</div>
+                <div className="text-xs text-green-600 font-medium">&#9679; {t.dispo}</div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ========== PROCESSUS ========== */}
+      <section id="processus" className="py-16 sm:py-24 px-4 sm:px-6 md:px-12 bg-white">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="text-xs font-semibold uppercase tracking-widest text-primary-600 mb-2">Comment ça marche</div>
+          <Reveal><h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">3 étapes simples</h2></Reveal>
+        </div>
+        <div className="flex flex-col md:flex-row gap-8 sm:gap-10 max-w-4xl mx-auto relative">
+          {/* Connecting line */}
+          <div className="hidden md:block absolute top-9 left-20 right-20 h-0.5 bg-gradient-to-r from-primary-200 via-primary-400 to-primary-200" />
+          {steps.map((s) => (
+            <Reveal key={s.num} className="flex-1 text-center relative z-10">
+              <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full bg-gradient-to-br from-primary-600 to-primary-700 text-white flex items-center justify-center text-xl sm:text-2xl font-extrabold mx-auto mb-4 sm:mb-5 shadow-lg shadow-primary-600/25">
+                {s.num}
+              </div>
+              <h4 className="font-bold tracking-tight mb-2 text-sm sm:text-base">{s.title}</h4>
+              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ========== TEMOIGNAGES - CARROUSEL AUTO ========== */}
+      <section id="temoignages" className="py-16 sm:py-24 px-4 sm:px-6 md:px-12 bg-gray-50">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="text-xs font-semibold uppercase tracking-widest text-primary-600 mb-2">Témoignages</div>
+          <Reveal><h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">Ce que disent nos patients</h2></Reveal>
+        </div>
+
+        {/* Desktop: grille 3 colonnes */}
+        <div className="hidden md:grid grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {testimonials.slice(0, 3).map((t) => (
+            <Reveal key={t.name}>
+              <div className="bg-white border border-gray-200 rounded-2xl p-8 transition-all hover:-translate-y-1 hover:shadow-md">
+                <div className="text-amber-400 text-sm mb-3 tracking-widest">
+                  {'\u2605'.repeat(t.stars)}{'\u2606'.repeat(5 - t.stars)}
+                </div>
+                <blockquote className="text-sm text-gray-600 leading-relaxed italic mb-4">
+                  \"{t.quote}\"
+                </blockquote>
+                <div className="text-sm font-semibold">{t.name}</div>
+                <div className="text-xs text-gray-500">{t.since}</div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        {/* Mobile: carrousel auto-scroll */}
+        <div className="md:hidden max-w-sm mx-auto">
+          <div className="relative overflow-hidden">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${activeTestimonial * 100}%)` }}
+            >
+              {testimonials.map((t) => (
+                <div key={t.name} className="w-full flex-shrink-0 px-1">
+                  <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                    <div className="text-amber-400 text-sm mb-3 tracking-widest">
+                      {'\u2605'.repeat(t.stars)}{'\u2606'.repeat(5 - t.stars)}
+                    </div>
+                    <blockquote className="text-sm text-gray-600 leading-relaxed italic mb-4">
+                      \"{t.quote}\"
+                    </blockquote>
+                    <div className="text-sm font-semibold">{t.name}</div>
+                    <div className="text-xs text-gray-500">{t.since}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Dots indicator */}
+          <div className="flex justify-center gap-2 mt-4">
+            {testimonials.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => goToTestimonial(idx)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  idx === activeTestimonial
+                    ? 'bg-primary-600 w-6'
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Témoignage ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========== CTA FINAL ========== */}
+      <section className="relative bg-gray-900 py-16 sm:py-24 px-4 sm:px-6 text-center overflow-hidden">
+        <div className="absolute w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.15),transparent_70%)] -top-52 left-1/2 -translate-x-1/2" />
+        <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight relative z-10">
+          Prêt à prendre soin de vous ?
+        </h2>
+        <p className="text-slate-400 text-base sm:text-lg mb-8 sm:mb-10 relative z-10">
+          Accédez à votre espace patient et commencez votre parcours de soin en ligne.
+        </p>
+        <div className="flex flex-wrap justify-center gap-3 relative z-10">
+          <Link
+            to="/app/appointments/new"
+            className="inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-primary-600 hover:bg-primary-700 text-white text-sm sm:text-base font-semibold rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary-600/30"
+          >
+            Prendre rendez-vous &rarr;
+          </Link>
+          <Link
+            to="/app/preconsultation"
+            className="inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm sm:text-base font-semibold rounded-xl transition-all hover:-translate-y-0.5"
+          >
+            Pré-consultation IA
+          </Link>
+        </div>
+      </section>
+
+      {/* ========== FOOTER ========== */}
+      <footer className="bg-gray-900 border-t border-white/5 px-4 sm:px-6 md:px-12 py-10 sm:py-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+            <div className="text-xl font-bold text-white">
+              Medi<span className="text-primary-400 font-normal">Consult</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+              <a href="#services" className="text-sm text-slate-400 hover:text-white transition-colors">Services</a>
+              <a href="#equipe" className="text-sm text-slate-400 hover:text-white transition-colors">Équipe</a>
+              <a href="#processus" className="text-sm text-slate-400 hover:text-white transition-colors">Processus</a>
+              <a href="#temoignages" className="text-sm text-slate-400 hover:text-white transition-colors">Témoignages</a>
+            </div>
+          </div>
+
+          {/* Contact + legal */}
+          <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-sm">
+              <a
+                href="mailto:contact@mediconsult.com"
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                contact@mediconsult.com
+              </a>
+              <Link to="/confidentialite" className="text-slate-400 hover:text-white transition-colors">Confidentialité</Link>
+              <Link to="/mentions-legales" className="text-slate-400 hover:text-white transition-colors">Mentions légales</Link>
+            </div>
+            <div className="text-xs text-slate-600">&copy; 2025 MediConsult. Tous droits réservés.</div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;

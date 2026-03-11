@@ -7,6 +7,8 @@ import DashboardLayout from './components/layout/DashboardLayout';
 
 // Public
 import LandingPage from './pages/LandingPage';
+import ConfidentialitePage from './pages/ConfidentialitePage';
+import MentionsLegalesPage from './pages/MentionsLegalesPage';
 
 // Auth
 import LoginPage from './pages/auth/LoginPage';
@@ -66,6 +68,8 @@ const App: React.FC = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/confidentialite" element={<ConfidentialitePage />} />
+            <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
 
             {/* ====== ROUTES PROTEGEES avec layout Dashboard ====== */}
             <Route

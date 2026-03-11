@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Models\Notification;
 use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,7 @@ class AppointmentController extends Controller
 
     /**
      * Patient cree un RDV : specialite + motif (pas de medecin)
+     * Le RDV est cree en statut "pending" et le patient est notifie.
      */
     public function store(Request $request): JsonResponse
     {
@@ -62,6 +64,21 @@ class AppointmentController extends Controller
 
         $appointment->load(['specialty']);
 
+        $specialtyName = $appointment->specialty->name ?? 'la specialite demandee';
+
+        // Notifier le patient que sa demande est en attente
+        Notification::create([
+            'user_id' => $patient->id,
+            'type'    => 'appointment',
+            'title'   => 'Demande de rendez-vous enregistree',
+            'message' => "Votre demande de rendez-vous en {$specialtyName} a ete enregistree. Elle est en attente de confirmation par notre secretariat. Vous serez notifie des qu'un medecin vous sera assigne.",
+            'data'    => [
+                'appointment_id' => $appointment->id,
+                'specialty'      => $specialtyName,
+                'action'         => 'pending',
+            ],
+        ]);
+
         AuditService::log('create', 'Appointment', $appointment->id, null, [
             'specialty_id' => $appointment->specialty_id,
             'reason' => $appointment->reason,
@@ -70,7 +87,7 @@ class AppointmentController extends Controller
         return response()->json([
             'success' => true,
             'data' => $appointment,
-            'message' => 'Rendez-vous demande avec succes. La secretaire vous assignera un medecin.',
+            'message' => 'Votre demande de rendez-vous a ete enregistree avec succes. Elle est en attente de confirmation. Vous serez notifie dans vos notifications et sur votre page de rendez-vous.',
         ], 201);
     }
 
@@ -96,41 +113,37 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Modifier le statut d'un rendez-vous
+     * Modifier un rendez-vous
      */
     public function update(Request $request, Appointment $appointment): JsonResponse
     {
         $user = $request->user();
 
+        if (!$this->canAccess($user, $appointment)) {
+            return response()->json(['message' => 'Acces non autorise'], 403);
+        }
+
         $validated = $request->validate([
-            'status' => 'sometimes|in:confirmed,cancelled,completed',
-            'cancellation_reason' => 'nullable|string|max:500',
+            'scheduled_at' => 'nullable|date|after:now',
+            'reason' => 'nullable|string|max:1000',
             'notes' => 'nullable|string|max:500',
         ]);
 
-        if (isset($validated['status'])) {
-            if ($validated['status'] === 'confirmed' && !$user->isSecretary() && !$user->isAdmin()) {
-                return response()->json(['message' => 'Seul le secretaire peut confirmer un RDV'], 403);
-            }
-            if ($validated['status'] === 'cancelled' && $user->isPatient() && $user->id !== $appointment->patient_id) {
-                return response()->json(['message' => 'Acces non autorise'], 403);
-            }
-        }
+        $old = $appointment->toArray();
 
-        $oldValues = $appointment->toArray();
         $appointment->update($validated);
 
-        AuditService::log('update', 'Appointment', $appointment->id, $oldValues, $validated);
+        AuditService::log('update', 'Appointment', $appointment->id, $old, $appointment->toArray());
 
         return response()->json([
             'success' => true,
-            'data' => $appointment,
-            'message' => 'Rendez-vous mis a jour avec succes',
+            'data' => $appointment->fresh(),
+            'message' => 'Rendez-vous mis a jour',
         ]);
     }
 
     /**
-     * Annuler un rendez-vous
+     * Supprimer un rendez-vous
      */
     public function destroy(Request $request, Appointment $appointment): JsonResponse
     {
@@ -140,80 +153,40 @@ class AppointmentController extends Controller
             return response()->json(['message' => 'Acces non autorise'], 403);
         }
 
-        $oldValues = $appointment->toArray();
-        $appointment->update([
-            'status' => 'cancelled',
-            'cancellation_reason' => 'Annule par ' . $user->role,
-        ]);
+        if ($appointment->status === 'confirmed') {
+            return response()->json(['message' => 'Impossible de supprimer un RDV confirme'], 422);
+        }
 
-        AuditService::log('cancel', 'Appointment', $appointment->id, $oldValues);
+        AuditService::log('delete', 'Appointment', $appointment->id, $appointment->toArray());
+
+        $appointment->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Rendez-vous annule avec succes',
+            'message' => 'Rendez-vous supprime',
         ]);
     }
 
     /**
-     * Creneaux disponibles d'un medecin pour une date donnee
+     * Verifier si l'utilisateur peut acceder au RDV
      */
-    public function availableSlots(Request $request, Doctor $doctor): JsonResponse
-    {
-        $validated = $request->validate([
-            'date' => 'required|date|after_or_equal:today',
-        ]);
-
-        $date = \Carbon\Carbon::parse($validated['date']);
-        $dayOfWeek = $date->dayOfWeek;
-
-        $schedule = $doctor->schedules()
-            ->where('day_of_week', $dayOfWeek)
-            ->where('is_available', true)
-            ->first();
-
-        if (!$schedule) {
-            return response()->json([
-                'success' => true,
-                'data' => [],
-                'message' => 'Le medecin n\'est pas disponible ce jour',
-            ]);
-        }
-
-        $slots = [];
-        $start = \Carbon\Carbon::parse($validated['date'] . ' ' . $schedule->start_time);
-        $end = \Carbon\Carbon::parse($validated['date'] . ' ' . $schedule->end_time);
-
-        while ($start->lt($end)) {
-            $slotTime = $start->copy();
-
-            $isTaken = Appointment::where('doctor_id', $doctor->id)
-                ->where('scheduled_at', $slotTime)
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->exists();
-
-            $slots[] = [
-                'time' => $slotTime->format('H:i'),
-                'datetime' => $slotTime->toISOString(),
-                'available' => !$isTaken,
-            ];
-
-            $start->addMinutes(30);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $slots,
-        ]);
-    }
-
     private function canAccess($user, Appointment $appointment): bool
     {
-        if ($user->isAdmin() || $user->isSecretary()) return true;
-        if ($user->isPatient() && $user->id === $appointment->patient_id) return true;
+        if ($user->isAdmin() || $user->isSecretary()) {
+            return true;
+        }
+
+        if ($user->isPatient() && $appointment->patient_id === $user->id) {
+            return true;
+        }
+
         if ($user->isDoctor()) {
             $doctor = Doctor::where('user_id', $user->id)->first();
-            return $doctor && $doctor->id === $appointment->doctor_id;
+            if ($doctor && $appointment->doctor_id === $doctor->id) {
+                return true;
+            }
         }
+
         return false;
     }
 }

@@ -109,9 +109,16 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/dashboard', [SecretaryController::class, 'dashboard']);
             Route::get('/pending-appointments', [SecretaryController::class, 'pendingAppointments']);
             Route::get('/doctors-by-specialty/{specialtyId}', [SecretaryController::class, 'doctorsBySpecialty']);
+            Route::get('/appointment-history', [SecretaryController::class, 'appointmentHistory']);
+
+            // Actions sur les RDV
             Route::put('/appointments/{appointment}/assign', [SecretaryController::class, 'assignDoctor']);
             Route::put('/appointments/{appointment}/validate', [SecretaryController::class, 'validateAppointment']);
             Route::put('/appointments/{appointment}/reject', [SecretaryController::class, 'rejectAppointment']);
+            Route::put('/appointments/{appointment}/confirm', [SecretaryController::class, 'confirmAppointment']);
+            Route::put('/appointments/{appointment}/cancel', [SecretaryController::class, 'cancelAppointment']);
+
+            // Reservation en ligne
             Route::put('/online-booking/toggle', [SecretaryController::class, 'toggleOnlineBooking']);
             Route::get('/online-booking/status', [SecretaryController::class, 'onlineBookingStatus']);
         });

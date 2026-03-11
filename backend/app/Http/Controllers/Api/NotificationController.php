@@ -88,6 +88,22 @@ class NotificationController extends Controller
     }
 
     /**
+     * Supprimer toutes les notifications lues
+     * DELETE /api/notifications/clear-read
+     */
+    public function clearRead(): JsonResponse
+    {
+        $deleted = Notification::where('user_id', auth()->id())
+            ->whereNotNull('read_at')
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$deleted} notification(s) lue(s) supprim\u00e9e(s)",
+        ]);
+    }
+
+    /**
      * Supprimer une notification
      * DELETE /api/notifications/{id}
      */

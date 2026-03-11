@@ -11,14 +11,14 @@ const DashboardPage: React.FC = () => {
   if (user.role === 'patient') {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Bienvenue, {user.name} 👋
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 break-words">
+          Bienvenue, {user.name}
         </h1>
 
         {/* Actions rapides */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <Link
-            to="/preconsultation"
+            to="/app/preconsultation"
             className="card hover:shadow-md transition-shadow cursor-pointer group"
           >
             <div className="flex items-center">
@@ -28,14 +28,14 @@ const DashboardPage: React.FC = () => {
                 </svg>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900">Preconsultation</h3>
-                <p className="text-sm text-gray-500">Decrivez vos symptomes</p>
+                <h3 className="text-lg font-semibold text-gray-900">Pr&eacute;consultation</h3>
+                <p className="text-sm text-gray-500">D&eacute;crivez vos sympt&ocirc;mes</p>
               </div>
             </div>
           </Link>
 
           <Link
-            to="/appointments"
+            to="/app/appointments"
             className="card hover:shadow-md transition-shadow cursor-pointer group"
           >
             <div className="flex items-center">
@@ -46,13 +46,13 @@ const DashboardPage: React.FC = () => {
               </div>
               <div className="ml-4">
                 <h3 className="text-lg font-semibold text-gray-900">Mes Rendez-vous</h3>
-                <p className="text-sm text-gray-500">Voir et gerer mes RDV</p>
+                <p className="text-sm text-gray-500">Voir et g&eacute;rer mes RDV</p>
               </div>
             </div>
           </Link>
 
           <Link
-            to="/doctors"
+            to="/app/doctors"
             className="card hover:shadow-md transition-shadow cursor-pointer group"
           >
             <div className="flex items-center">
@@ -62,8 +62,8 @@ const DashboardPage: React.FC = () => {
                 </svg>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900">Nos Medecins</h3>
-                <p className="text-sm text-gray-500">Trouver un specialiste</p>
+                <h3 className="text-lg font-semibold text-gray-900">Nos M&eacute;decins</h3>
+                <p className="text-sm text-gray-500">Trouver un sp&eacute;cialiste</p>
               </div>
             </div>
           </Link>
@@ -78,12 +78,12 @@ const DashboardPage: React.FC = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-semibold text-primary-900">Comment ca marche ?</h3>
+              <h3 className="text-lg font-semibold text-primary-900">Comment &ccedil;a marche ?</h3>
               <ol className="mt-2 text-sm text-primary-700 space-y-1 list-decimal list-inside">
-                <li>Remplissez le formulaire de preconsultation</li>
-                <li>L'IA analyse vos symptomes et suggere une specialite</li>
-                <li>Prenez rendez-vous avec le medecin recommande</li>
-                <li>Consultez en ligne ou en presentiel</li>
+                <li>Remplissez le formulaire de pr&eacute;consultation</li>
+                <li>L'IA analyse vos sympt&ocirc;mes et sugg&egrave;re une sp&eacute;cialit&eacute;</li>
+                <li>Prenez rendez-vous avec le m&eacute;decin recommand&eacute;</li>
+                <li>Consultez en ligne ou en pr&eacute;sentiel</li>
               </ol>
             </div>
           </div>
@@ -92,15 +92,15 @@ const DashboardPage: React.FC = () => {
     );
   }
 
-  // Dashboard Medecin
+  // Dashboard M&eacute;decin
   if (user.role === 'doctor') {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 break-words">
           Tableau de bord - Dr. {user.name}
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
@@ -146,7 +146,7 @@ const DashboardPage: React.FC = () => {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Preconsultations</p>
+                <p className="text-sm font-medium text-gray-500">Pr&eacute;consultations</p>
                 <p className="text-3xl font-bold text-purple-600">--</p>
               </div>
               <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
@@ -158,36 +158,36 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <Link
-            to="/appointments"
+            to="/app/appointments"
             className="card hover:shadow-md transition-shadow cursor-pointer"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Gerer mes rendez-vous</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">G&eacute;rer mes rendez-vous</h3>
             <p className="text-gray-500">Voir, confirmer ou annuler les rendez-vous</p>
           </Link>
 
           <Link
-            to="/preconsultation"
+            to="/app/preconsultation"
             className="card hover:shadow-md transition-shadow cursor-pointer"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Preconsultations recues</h3>
-            <p className="text-gray-500">Consulter les fiches de preconsultation des patients</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Pr&eacute;consultations re&ccedil;ues</h3>
+            <p className="text-gray-500">Consulter les fiches de pr&eacute;consultation des patients</p>
           </Link>
         </div>
       </div>
     );
   }
 
-  // Dashboard Secretaire
+  // Dashboard Secr&eacute;taire
   if (user.role === 'secretary') {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Espace Secretaire - {user.name}
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 break-words">
+          Espace Secr&eacute;taire - {user.name}
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <Link
             to="/app/secretary/dashboard"
             className="card hover:shadow-md transition-shadow cursor-pointer group"
@@ -223,7 +223,7 @@ const DashboardPage: React.FC = () => {
           </Link>
 
           <Link
-            to="/doctors"
+            to="/app/doctors"
             className="card hover:shadow-md transition-shadow cursor-pointer group"
           >
             <div className="flex items-center">
@@ -233,8 +233,8 @@ const DashboardPage: React.FC = () => {
                 </svg>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900">Medecins</h3>
-                <p className="text-sm text-gray-500">Consulter la liste des medecins</p>
+                <h3 className="text-lg font-semibold text-gray-900">M&eacute;decins</h3>
+                <p className="text-sm text-gray-500">Consulter la liste des m&eacute;decins</p>
               </div>
             </div>
           </Link>
@@ -248,11 +248,11 @@ const DashboardPage: React.FC = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-semibold text-orange-900">Vos responsabilites</h3>
+              <h3 className="text-lg font-semibold text-orange-900">Vos responsabilit&eacute;s</h3>
               <ol className="mt-2 text-sm text-orange-700 space-y-1 list-decimal list-inside">
                 <li>Valider ou rejeter les demandes de rendez-vous</li>
-                <li>Assigner les medecins aux consultations</li>
-                <li>Gerer le planning et les creneaux disponibles</li>
+                <li>Assigner les m&eacute;decins aux consultations</li>
+                <li>G&eacute;rer le planning et les cr&eacute;neaux disponibles</li>
                 <li>Ouvrir ou fermer la prise de RDV en ligne</li>
               </ol>
             </div>
@@ -266,11 +266,11 @@ const DashboardPage: React.FC = () => {
   if (user.role === 'admin') {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 break-words">
           Administration
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
@@ -288,7 +288,7 @@ const DashboardPage: React.FC = () => {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Medecins</p>
+                <p className="text-sm font-medium text-gray-500">M&eacute;decins</p>
                 <p className="text-3xl font-bold text-gray-900">--</p>
               </div>
               <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
@@ -317,13 +317,13 @@ const DashboardPage: React.FC = () => {
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
           <div className="space-y-3">
-            <Link to="/doctors" className="flex items-center text-primary-600 hover:text-primary-800">
+            <Link to="/app/doctors" className="flex items-center text-primary-600 hover:text-primary-800">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              Gerer les medecins
+              G&eacute;rer les m&eacute;decins
             </Link>
-            <Link to="/appointments" className="flex items-center text-primary-600 hover:text-primary-800">
+            <Link to="/app/appointments" className="flex items-center text-primary-600 hover:text-primary-800">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -333,7 +333,7 @@ const DashboardPage: React.FC = () => {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              Espace secretaire
+              Espace secr&eacute;taire
             </Link>
           </div>
         </div>
@@ -343,7 +343,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="text-center py-12">
-      <p className="text-gray-500">Role non reconnu</p>
+      <p className="text-gray-500">R&ocirc;le non reconnu</p>
     </div>
   );
 };

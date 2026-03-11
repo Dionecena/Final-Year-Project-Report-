@@ -5,6 +5,7 @@ import api from '../../services/api';
 
 const DashboardLayout: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -17,25 +18,38 @@ const DashboardLayout: React.FC = () => {
     };
 
     fetchUnread();
-    // Rafraichir toutes les 60 secondes
     const interval = setInterval(fetchUnread, 60000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar />
+      {/* Sidebar responsive */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Plateforme de Preconsultation Medicale
-            </h2>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-3">
+              {/* Bouton hamburger mobile */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 -ml-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Ouvrir le menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+
+              <h2 className="text-base md:text-lg font-semibold text-gray-900 truncate">
+                Plateforme de Preconsultation Medicale
+              </h2>
+            </div>
+
+            <div className="flex items-center space-x-2 md:space-x-4">
               {/* Notifications bell */}
               <Link
                 to="/app/notifications"
@@ -54,8 +68,8 @@ const DashboardLayout: React.FC = () => {
           </div>
         </header>
 
-        {/* Zone de contenu scrollable */}
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* Zone de contenu scrollable - padding responsive */}
+        <main className="flex-1 overflow-y-auto p-3 md:p-6">
           <Outlet />
         </main>
       </div>
